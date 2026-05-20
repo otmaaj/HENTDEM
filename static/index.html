@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HENTDEM</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #141414;
+    --surface: #1c1c1c;
+    --card: #181818;
+    --border: #272727;
+    --accent: #e8ff00;
+    --red: #ff3232;
+    --text: #efefef;
+    --muted: #666;
+    --sub: #444;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Barlow', sans-serif;
+    min-height: 100vh;
+  }
+
+  header {
+    position: sticky; top: 0; z-index: 200;
+    background: #0e0e0e;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    padding: 0 20px;
+    height: 54px;
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+    cursor: pointer;
+  }
+
+  .logo-icon {
+    width: 36px; height: 36px;
+    background: var(--accent);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .logo-icon svg { width: 22px; height: 22px; }
+
+  .logo-text {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.6rem;
+    letter-spacing: 0.08em;
+    line-height: 1;
+    color: var(--text);
+  }
+  .logo-text span { color: var(--accent); }
+
+  .search-box {
+    flex: 1; max-width: 400px;
+    display: flex;
+    border: 1px solid var(--border);
+    background: var(--surface);
+  }
+  .search-box:focus-within { border-color: var(--accent); }
+
+  #search {
+    flex: 1; background: transparent;
+    border: none; outline: none;
+    color: var(--text);
+    font-family: 'Barlow', sans-serif;
+    font-size: 0.88rem;
+    padding: 8px 14px;
+  }
+  #search::placeholder { color: var(--muted); }
+
+  .search-icon {
+    display: flex; align-items: center; justify-content: center;
+    padding: 0 12px; color: var(--muted);
+    font-size: 1.1rem; cursor: pointer;
+    transition: color 0.15s;
+  }
+  .search-icon:hover { color: var(--accent); }
+
+  .genre-bar {
+    background: #111;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center;
+    overflow-x: auto; scrollbar-width: none;
+    padding: 0 20px;
+  }
+  .genre-bar::-webkit-scrollbar { display: none; }
+
+  .genre-btn {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.78rem; font-weight: 600;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--muted); background: transparent;
+    border: none; border-bottom: 2px solid transparent;
+    padding: 12px 16px; cursor: pointer;
+    white-space: nowrap;
+    transition: color 0.15s, border-color 0.15s;
+  }
+  .genre-btn:hover { color: var(--text); }
+  .genre-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+  .container { max-width: 600px; margin: 0 auto; padding: 16px 0 60px; }
+
+  .results-info {
+    font-size: 0.72rem; color: var(--muted);
+    letter-spacing: 0.06em;
+    padding: 0 16px 10px;
+    text-transform: uppercase; min-height: 26px;
+  }
+
+  .card-list { display: flex; flex-direction: column; }
+
+  .card {
+    background: var(--card);
+    border-bottom: 1px solid var(--border);
+    cursor: pointer; overflow: hidden;
+    opacity: 0; transform: translateY(10px);
+    animation: fadeUp 0.35s forwards;
+  }
+  @keyframes fadeUp { to { opacity: 1; transform: translateY(0); } }
+
+  .card-thumb {
+    width: 100%; aspect-ratio: 16/9;
+    overflow: hidden; background: #0f0f0f;
+    position: relative;
+  }
+
+  .card-thumb img {
+    width: 100%; height: 100%;
+    object-fit: cover; display: block;
+    transition: transform 0.5s cubic-bezier(0.25,0.46,0.45,0.94), filter 0.3s;
+    filter: brightness(0.88) saturate(0.85);
+  }
+  .card:hover .card-thumb img { transform: scale(1.05); filter: brightness(1) saturate(1.1); }
+
+  .card-thumb::after {
+    content: '';
+    position: absolute; inset: 0;
+    background: linear-gradient(to bottom, transparent 40%, rgba(0,0,0,0.65) 100%);
+    pointer-events: none;
+  }
+
+  .card-thumb-placeholder {
+    width: 100%; height: 100%;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 5rem; color: var(--sub);
+  }
+
+  .read-badge {
+    position: absolute; top: 12px; right: 12px;
+    background: var(--accent); color: #000;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.68rem; font-weight: 700;
+    letter-spacing: 0.12em; text-transform: uppercase;
+    padding: 3px 10px;
+    opacity: 0; transform: translateY(-5px);
+    transition: all 0.2s; z-index: 2;
+  }
+  .card:hover .read-badge { opacity: 1; transform: translateY(0); }
+
+  .card-info {
+    display: flex; align-items: center;
+    gap: 12px; padding: 11px 16px 13px;
+  }
+
+  .card-num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.6rem; color: var(--sub);
+    line-height: 1; flex-shrink: 0; min-width: 30px;
+  }
+
+  .card-meta { flex: 1; min-width: 0; }
+
+  .card-name {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 1.1rem; font-weight: 700;
+    letter-spacing: 0.02em; color: var(--text);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+
+  .card-genres { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 5px; }
+
+  .tag {
+    font-size: 0.62rem; font-weight: 600;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--muted); background: #111;
+    border: 1px solid var(--border);
+    padding: 2px 7px; line-height: 1.7;
+  }
+
+  .card-arrow {
+    color: var(--sub); font-size: 1.4rem;
+    flex-shrink: 0; line-height: 1;
+    transition: color 0.15s, transform 0.15s;
+  }
+  .card:hover .card-arrow { color: var(--accent); transform: translateX(4px); }
+
+  .loader {
+    display: flex; align-items: center; justify-content: center;
+    gap: 6px; padding: 70px;
+  }
+  .dot {
+    width: 7px; height: 20px; background: var(--accent);
+    animation: bar 0.9s ease-in-out infinite;
+  }
+  .dot:nth-child(2) { animation-delay: 0.15s; background: var(--sub); }
+  .dot:nth-child(3) { animation-delay: 0.3s; background: var(--sub); }
+  @keyframes bar {
+    0%,100% { opacity: 0.2; transform: scaleY(0.4); }
+    50% { opacity: 1; transform: scaleY(1); }
+  }
+
+  .empty {
+    text-align: center; padding: 80px 20px;
+    color: var(--muted); font-size: 0.82rem;
+    letter-spacing: 0.12em; text-transform: uppercase;
+  }
+
+  /* READER */
+  #reader {
+    position: fixed; inset: 0;
+    background: #050505;
+    z-index: 500; display: none; flex-direction: column;
+  }
+  #reader.open { display: flex; }
+
+  .reader-header {
+    display: flex; align-items: center;
+    justify-content: space-between;
+    padding: 11px 20px;
+    background: #0a0a0a;
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0; gap: 12px;
+  }
+
+  .reader-title {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 1.15rem; font-weight: 700;
+    letter-spacing: 0.04em; color: var(--accent);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+
+  .reader-count {
+    font-size: 0.72rem; color: var(--muted);
+    letter-spacing: 0.06em; flex-shrink: 0;
+  }
+
+  .close-btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.82rem; font-weight: 700;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    padding: 7px 16px; cursor: pointer; flex-shrink: 0;
+    transition: all 0.15s;
+  }
+  .close-btn:hover { background: var(--red); border-color: var(--red); }
+
+  #pages-wrap {
+    flex: 1; overflow-y: auto;
+    display: flex; flex-direction: column;
+    align-items: center; gap: 32px;
+    padding: 32px 0 60px;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
+  }
+
+  /* страница с номером в углу */
+  .page-item {
+    position: relative;
+    width: 100%;
+    max-width: 780px;
+  }
+
+.page-item {
+  position: relative;  /* ← добавь это
+  width: 100%;
+  max-width: 780px;
+}
+
+  .page-badge {
+    position: absolute;
+    top: 0; left: 0;
+    background: #000;
+    border: 1px solid #333;
+    color: var(--accent);
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 0.85rem;
+    letter-spacing: 0.06em;
+    padding: 3px 8px;
+    line-height: 1.4;
+    z-index: 10;
+    pointer-events: none;
+  }
+
+  #totop {
+    position: fixed; bottom: 24px; right: 20px;
+    width: 40px; height: 40px;
+    background: var(--accent); color: #000;
+    border: none; cursor: pointer;
+    font-size: 1rem; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0; transform: translateY(10px);
+    transition: all 0.25s; z-index: 300;
+  }
+  #totop.show { opacity: 1; transform: translateY(0); }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo" onclick="closeReader()">
+    <div class="logo-icon">
+      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="3" y="3" width="7" height="10" fill="#000"/>
+        <rect x="14" y="3" width="7" height="10" fill="#000"/>
+        <rect x="3" y="15" width="7" height="6" fill="#000"/>
+        <rect x="14" y="15" width="7" height="6" fill="#000"/>
+      </svg>
+    </div>
+    <div class="logo-text">HENT<span>DEM</span></div>
+  </div>
+  <div class="search-box">
+    <input type="text" id="search" placeholder="Поиск...">
+    <div class="search-icon" onclick="doSearch()">⌕</div>
+  </div>
+</header>
+
+<div class="genre-bar" id="genre-bar">
+  <button class="genre-btn active" data-genre="all" onclick="setGenre(this,'all')">Все</button>
+</div>
+
+<div class="container">
+  <div class="results-info" id="results-info"></div>
+  <div class="card-list" id="card-list">
+    <div class="loader">
+      <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+    </div>
+  </div>
+</div>
+
+<div id="reader">
+  <div class="reader-header">
+    <div class="reader-title" id="reader-title">—</div>
+    <div class="reader-count" id="reader-count"></div>
+    <button class="close-btn" onclick="closeReader()">✕ Закрыть</button>
+  </div>
+  <div id="pages-wrap"></div>
+</div>
+
+<button id="totop" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+
+<script>
+  let allManga = [];
+  let activeGenre = 'all';
+
+  window.addEventListener('scroll', () => {
+    document.getElementById('totop').classList.toggle('show', scrollY > 400);
+  });
+
+  let timer;
+  document.getElementById('search').addEventListener('input', () => {
+    clearTimeout(timer); timer = setTimeout(doSearch, 300);
+  });
+  document.getElementById('search').addEventListener('keydown', e => {
+    if (e.key === 'Enter') doSearch();
+  });
+
+  async function loadManga() {
+    try {
+      const r = await fetch('/manga/');
+      if (!r.ok) throw new Error(r.status);
+      const data = await r.json();
+      allManga = data.manga || [];
+      buildGenres(allManga);
+      render(allManga);
+    } catch(e) {
+      document.getElementById('card-list').innerHTML =
+        `<div class="empty">Ошибка загрузки: ${e.message}</div>`;
+    }
+  }
+
+  function buildGenres(list) {
+    const set = new Set();
+    list.forEach(m => (m.genre || 'другое').split(',').forEach(g => set.add(g.trim())));
+    const bar = document.getElementById('genre-bar');
+    set.forEach(g => {
+      const btn = document.createElement('button');
+      btn.className = 'genre-btn';
+      btn.textContent = g;
+      btn.dataset.genre = g;
+      btn.onclick = () => setGenre(btn, g);
+      bar.appendChild(btn);
+    });
+  }
+
+  function setGenre(btn, genre) {
+    document.querySelectorAll('.genre-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    activeGenre = genre;
+    doSearch();
+  }
+
+  function doSearch() {
+    const q = document.getElementById('search').value.trim().toLowerCase();
+    let list = allManga;
+    if (activeGenre !== 'all')
+      list = list.filter(m => (m.genre||'').split(',').map(g=>g.trim()).includes(activeGenre));
+    if (q)
+      list = list.filter(m => m.name.toLowerCase().includes(q));
+    render(list, q || activeGenre !== 'all');
+  }
+
+  function render(list, filtered = false) {
+    const el = document.getElementById('card-list');
+    document.getElementById('results-info').textContent = filtered ? `Найдено: ${list.length}` : '';
+    if (!list.length) { el.innerHTML = `<div class="empty">Ничего не найдено</div>`; return; }
+    el.innerHTML = '';
+    list.forEach((m, i) => {
+      const genres = (m.genre || 'другое').split(',').map(g => g.trim());
+      const imgSrc = m.photo ? `/media/${encodeURIComponent(m.name)}/${m.photo}` : null;
+      const num = String(i + 1).padStart(2, '0');
+      const card = document.createElement('div');
+      card.className = 'card';
+      card.style.animationDelay = `${Math.min(i * 0.05, 0.8)}s`;
+      card.innerHTML = `
+        <div class="card-thumb">
+          ${imgSrc
+            ? `<img src="${imgSrc}" alt="${m.name}" loading="lazy"
+                onerror="this.parentElement.innerHTML='<div class=card-thumb-placeholder>${m.name.slice(0,2).toUpperCase()}</div>'">`
+            : `<div class="card-thumb-placeholder">${m.name.slice(0,2).toUpperCase()}</div>`}
+          <div class="read-badge">Читать</div>
+        </div>
+        <div class="card-info">
+          <div class="card-num">${num}</div>
+          <div class="card-meta">
+            <div class="card-name">${m.name}</div>
+            <div class="card-genres">${genres.map(g=>`<span class="tag">${g}</span>`).join('')}</div>
+          </div>
+          <div class="card-arrow">›</div>
+        </div>`;
+      card.onclick = () => openReader(m.name);
+      el.appendChild(card);
+    });
+  }
+
+  async function openReader(name) {
+    const reader = document.getElementById('reader');
+    const wrap = document.getElementById('pages-wrap');
+    document.getElementById('reader-title').textContent = name;
+    document.getElementById('reader-count').textContent = '';
+    wrap.innerHTML = `<div class="loader"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>`;
+    reader.classList.add('open');
+    document.body.style.overflow = 'hidden';
+
+    try {
+      const r = await fetch(`/manga/${encodeURIComponent(name)}`);
+      if (!r.ok) throw new Error(r.status);
+      const data = await r.json();
+      const pages = data.pages || [];
+      document.getElementById('reader-count').textContent = `${pages.length} стр.`;
+      wrap.innerHTML = '';
+      pages.forEach((p, i) => {
+        const item = document.createElement('div');
+        item.className = 'page-item';
+        item.innerHTML = `
+          <div class="page-badge">${i + 1}</div>
+          <img src="/media/${encodeURIComponent(name)}/${p}"
+               alt="стр. ${i+1}"
+               loading="${i < 2 ? 'eager' : 'lazy'}">
+        `;
+        wrap.appendChild(item);
+      });
+    } catch(e) {
+      wrap.innerHTML = `<div class="empty">Ошибка: ${e.message}</div>`;
+    }
+  }
+
+  function closeReader() {
+    document.getElementById('reader').classList.remove('open');
+    document.getElementById('pages-wrap').innerHTML = '';
+    document.body.style.overflow = '';
+  }
+
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeReader(); });
+
+  loadManga();
+</script>
+</body>
+</html>

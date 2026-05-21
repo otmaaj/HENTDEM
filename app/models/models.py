@@ -12,3 +12,11 @@ class Manga(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(String(128), unique=True)
     genre: Mapped[str] = mapped_column(String(256), default='другое')
+
+
+class Users(Base):
+    __tablename__ = 'users'
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    password: Mapped[str] = mapped_column(String)
+    user_name:Mapped[str] = mapped_column(String(64), unique=True)

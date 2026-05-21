@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException, Depends
 from app.services.services import get_manga_list, get_pages, get_photo
-from app.shemas import Session, get_db
+from app.models.connection import Session, get_db
 from app.models.models import Manga
 from sqlalchemy import select
 

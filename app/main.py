@@ -6,11 +6,10 @@ from fastapi.responses import FileResponse
 from pathlib import Path
 from sqlalchemy import select
 from sqlalchemy.orm import Session
-from app.models.models import Users
-
+from app.routers.users import router as users_router
 from app.routers.handlers import router
 from app.models.models import Manga, Base
-from app.shemas import engine
+from app.models.connection import engine
 from app.services.services import MEDIA_DIR
 
 BASE_DIR = Path(__file__).parent.parent
@@ -42,10 +41,9 @@ app.add_middleware(
 )
 
 app.include_router(router)
-
+app.include_router(users_router)
 app.mount("/media", StaticFiles(directory=MEDIA_DIR), name="media")
 app.mount("/static", StaticFiles(directory=BASE_DIR / "static"), name="static")
-
 @app.get("/")
 def index():
     return FileResponse(BASE_DIR / "static" / "index.html")

@@ -21,304 +21,234 @@
 
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   html { scroll-behavior: smooth; }
+  body { background: var(--bg); color: var(--text); font-family: 'Barlow', sans-serif; min-height: 100vh; }
 
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'Barlow', sans-serif;
-    min-height: 100vh;
-  }
-
+  /* HEADER */
   header {
     position: sticky; top: 0; z-index: 200;
     background: #0e0e0e;
     border-bottom: 1px solid var(--border);
-    display: flex;
-    align-items: center;
-    gap: 20px;
-    padding: 0 20px;
-    height: 54px;
+    display: flex; align-items: center; gap: 20px;
+    padding: 0 20px; height: 54px;
   }
 
   .logo {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    flex-shrink: 0;
-    cursor: pointer;
+    display: flex; align-items: center; gap: 10px;
+    flex-shrink: 0; cursor: pointer;
   }
-
   .logo-icon {
     width: 36px; height: 36px;
     background: var(--accent);
     display: flex; align-items: center; justify-content: center;
-    flex-shrink: 0;
   }
   .logo-icon svg { width: 22px; height: 22px; }
-
   .logo-text {
     font-family: 'Bebas Neue', sans-serif;
-    font-size: 1.6rem;
-    letter-spacing: 0.08em;
-    line-height: 1;
-    color: var(--text);
+    font-size: 1.6rem; letter-spacing: 0.08em; line-height: 1; color: var(--text);
   }
   .logo-text span { color: var(--accent); }
 
   .search-box {
     flex: 1; max-width: 400px;
-    display: flex;
-    border: 1px solid var(--border);
-    background: var(--surface);
+    display: flex; border: 1px solid var(--border); background: var(--surface);
   }
   .search-box:focus-within { border-color: var(--accent); }
-
   #search {
-    flex: 1; background: transparent;
-    border: none; outline: none;
-    color: var(--text);
-    font-family: 'Barlow', sans-serif;
-    font-size: 0.88rem;
-    padding: 8px 14px;
+    flex: 1; background: transparent; border: none; outline: none;
+    color: var(--text); font-family: 'Barlow', sans-serif; font-size: 0.88rem; padding: 8px 14px;
   }
   #search::placeholder { color: var(--muted); }
-
   .search-icon {
     display: flex; align-items: center; justify-content: center;
-    padding: 0 12px; color: var(--muted);
-    font-size: 1.1rem; cursor: pointer;
-    transition: color 0.15s;
+    padding: 0 12px; color: var(--muted); font-size: 1.1rem; cursor: pointer; transition: color 0.15s;
   }
   .search-icon:hover { color: var(--accent); }
 
-  .genre-bar {
+  /* PROFILE BTN */
+  .profile-wrap { margin-left: auto; position: relative; flex-shrink: 0; }
+
+  .profile-btn {
+    width: 36px; height: 36px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: border-color 0.15s;
+    position: relative;
+  }
+  .profile-btn:hover { border-color: var(--accent); }
+  .profile-btn svg { width: 18px; height: 18px; color: var(--muted); }
+  .profile-btn.logged svg { color: var(--accent); }
+
+  .profile-name-badge {
+    position: absolute; top: -6px; right: -6px;
+    background: var(--accent); color: #000;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 0.55rem; letter-spacing: 0.05em;
+    padding: 1px 4px; line-height: 1.4;
+    display: none;
+  }
+  .profile-btn.logged .profile-name-badge { display: block; }
+
+  /* DROPDOWN */
+  .profile-dropdown {
+    position: absolute; top: calc(100% + 8px); right: 0;
+    width: 260px;
     background: #111;
+    border: 1px solid var(--border);
+    display: none;
+    flex-direction: column;
+    z-index: 300;
+  }
+  .profile-dropdown.open { display: flex; }
+
+  .dropdown-header {
+    padding: 14px 16px;
     border-bottom: 1px solid var(--border);
-    display: flex; align-items: center;
-    overflow-x: auto; scrollbar-width: none;
-    padding: 0 20px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.75rem; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--muted);
+  }
+
+  .dropdown-tabs {
+    display: flex; border-bottom: 1px solid var(--border);
+  }
+  .dtab {
+    flex: 1; padding: 10px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.78rem; font-weight: 700; letter-spacing: 0.08em;
+    text-transform: uppercase; color: var(--muted);
+    background: transparent; border: none;
+    border-bottom: 2px solid transparent;
+    cursor: pointer; transition: all 0.15s;
+  }
+  .dtab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+  .dropdown-form { padding: 16px; display: flex; flex-direction: column; gap: 10px; }
+
+  .dinput {
+    background: var(--surface); border: 1px solid var(--border);
+    color: var(--text); font-family: 'Barlow', sans-serif; font-size: 0.85rem;
+    padding: 8px 12px; outline: none; width: 100%; transition: border-color 0.15s;
+  }
+  .dinput:focus { border-color: var(--accent); }
+  .dinput::placeholder { color: var(--muted); }
+
+  .dsubmit {
+    background: var(--accent); color: #000;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.85rem; font-weight: 700; letter-spacing: 0.1em;
+    text-transform: uppercase; border: none; padding: 9px;
+    cursor: pointer; transition: background 0.15s;
+  }
+  .dsubmit:hover { background: #fff; }
+
+  .dmsg {
+    font-size: 0.75rem; letter-spacing: 0.04em;
+    text-align: center; min-height: 16px;
+  }
+  .dmsg.ok { color: var(--accent); }
+  .dmsg.err { color: var(--red); }
+
+  .dlogout {
+    margin: 0 16px 14px;
+    background: transparent; border: 1px solid var(--border);
+    color: var(--muted); font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.78rem; font-weight: 700; letter-spacing: 0.08em;
+    text-transform: uppercase; padding: 7px; cursor: pointer; transition: all 0.15s;
+  }
+  .dlogout:hover { border-color: var(--red); color: var(--red); }
+
+  .logged-info {
+    padding: 14px 16px;
+    display: flex; flex-direction: column; gap: 4px;
+  }
+  .logged-username {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.2rem; letter-spacing: 0.06em; color: var(--accent);
+  }
+  .logged-sub { font-size: 0.72rem; color: var(--muted); letter-spacing: 0.04em; }
+
+  /* GENRE BAR */
+  .genre-bar {
+    background: #111; border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; overflow-x: auto; scrollbar-width: none; padding: 0 20px;
   }
   .genre-bar::-webkit-scrollbar { display: none; }
-
   .genre-btn {
     font-family: 'Barlow Condensed', sans-serif;
-    font-size: 0.78rem; font-weight: 600;
-    letter-spacing: 0.08em; text-transform: uppercase;
-    color: var(--muted); background: transparent;
-    border: none; border-bottom: 2px solid transparent;
-    padding: 12px 16px; cursor: pointer;
-    white-space: nowrap;
-    transition: color 0.15s, border-color 0.15s;
+    font-size: 0.78rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--muted); background: transparent; border: none;
+    border-bottom: 2px solid transparent; padding: 12px 16px; cursor: pointer;
+    white-space: nowrap; transition: color 0.15s, border-color 0.15s;
   }
   .genre-btn:hover { color: var(--text); }
   .genre-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
 
+  /* CARDS */
   .container { max-width: 600px; margin: 0 auto; padding: 16px 0 60px; }
-
-  .results-info {
-    font-size: 0.72rem; color: var(--muted);
-    letter-spacing: 0.06em;
-    padding: 0 16px 10px;
-    text-transform: uppercase; min-height: 26px;
-  }
-
+  .results-info { font-size: 0.72rem; color: var(--muted); letter-spacing: 0.06em; padding: 0 16px 10px; text-transform: uppercase; min-height: 26px; }
   .card-list { display: flex; flex-direction: column; }
 
   .card {
-    background: var(--card);
-    border-bottom: 1px solid var(--border);
+    background: var(--card); border-bottom: 1px solid var(--border);
     cursor: pointer; overflow: hidden;
-    opacity: 0; transform: translateY(10px);
-    animation: fadeUp 0.35s forwards;
+    opacity: 0; transform: translateY(10px); animation: fadeUp 0.35s forwards;
   }
   @keyframes fadeUp { to { opacity: 1; transform: translateY(0); } }
 
-  .card-thumb {
-    width: 100%; aspect-ratio: 16/9;
-    overflow: hidden; background: #0f0f0f;
-    position: relative;
-  }
-
+  .card-thumb { width: 100%; aspect-ratio: 16/9; overflow: hidden; background: #0f0f0f; position: relative; }
   .card-thumb img {
-    width: 100%; height: 100%;
-    object-fit: cover; display: block;
+    width: 100%; height: 100%; object-fit: cover; display: block;
     transition: transform 0.5s cubic-bezier(0.25,0.46,0.45,0.94), filter 0.3s;
     filter: brightness(0.88) saturate(0.85);
   }
   .card:hover .card-thumb img { transform: scale(1.05); filter: brightness(1) saturate(1.1); }
-
   .card-thumb::after {
-    content: '';
-    position: absolute; inset: 0;
+    content: ''; position: absolute; inset: 0;
     background: linear-gradient(to bottom, transparent 40%, rgba(0,0,0,0.65) 100%);
     pointer-events: none;
   }
-
-  .card-thumb-placeholder {
-    width: 100%; height: 100%;
-    display: flex; align-items: center; justify-content: center;
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 5rem; color: var(--sub);
-  }
-
+  .card-thumb-placeholder { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-family: 'Bebas Neue', sans-serif; font-size: 5rem; color: var(--sub); }
   .read-badge {
     position: absolute; top: 12px; right: 12px;
     background: var(--accent); color: #000;
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 0.68rem; font-weight: 700;
-    letter-spacing: 0.12em; text-transform: uppercase;
-    padding: 3px 10px;
-    opacity: 0; transform: translateY(-5px);
-    transition: all 0.2s; z-index: 2;
+    font-family: 'Barlow Condensed', sans-serif; font-size: 0.68rem; font-weight: 700;
+    letter-spacing: 0.12em; text-transform: uppercase; padding: 3px 10px;
+    opacity: 0; transform: translateY(-5px); transition: all 0.2s; z-index: 2;
   }
   .card:hover .read-badge { opacity: 1; transform: translateY(0); }
 
-  .card-info {
-    display: flex; align-items: center;
-    gap: 12px; padding: 11px 16px 13px;
-  }
-
-  .card-num {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 1.6rem; color: var(--sub);
-    line-height: 1; flex-shrink: 0; min-width: 30px;
-  }
-
+  .card-info { display: flex; align-items: center; gap: 12px; padding: 11px 16px 13px; }
+  .card-num { font-family: 'Bebas Neue', sans-serif; font-size: 1.6rem; color: var(--sub); line-height: 1; flex-shrink: 0; min-width: 30px; }
   .card-meta { flex: 1; min-width: 0; }
-
-  .card-name {
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 1.1rem; font-weight: 700;
-    letter-spacing: 0.02em; color: var(--text);
-    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-  }
-
+  .card-name { font-family: 'Barlow Condensed', sans-serif; font-size: 1.1rem; font-weight: 700; letter-spacing: 0.02em; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .card-genres { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 5px; }
-
-  .tag {
-    font-size: 0.62rem; font-weight: 600;
-    letter-spacing: 0.08em; text-transform: uppercase;
-    color: var(--muted); background: #111;
-    border: 1px solid var(--border);
-    padding: 2px 7px; line-height: 1.7;
-  }
-
-  .card-arrow {
-    color: var(--sub); font-size: 1.4rem;
-    flex-shrink: 0; line-height: 1;
-    transition: color 0.15s, transform 0.15s;
-  }
+  .tag { font-size: 0.62rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); background: #111; border: 1px solid var(--border); padding: 2px 7px; line-height: 1.7; }
+  .card-arrow { color: var(--sub); font-size: 1.4rem; flex-shrink: 0; line-height: 1; transition: color 0.15s, transform 0.15s; }
   .card:hover .card-arrow { color: var(--accent); transform: translateX(4px); }
 
-  .loader {
-    display: flex; align-items: center; justify-content: center;
-    gap: 6px; padding: 70px;
-  }
-  .dot {
-    width: 7px; height: 20px; background: var(--accent);
-    animation: bar 0.9s ease-in-out infinite;
-  }
+  .loader { display: flex; align-items: center; justify-content: center; gap: 6px; padding: 70px; }
+  .dot { width: 7px; height: 20px; background: var(--accent); animation: bar 0.9s ease-in-out infinite; }
   .dot:nth-child(2) { animation-delay: 0.15s; background: var(--sub); }
   .dot:nth-child(3) { animation-delay: 0.3s; background: var(--sub); }
-  @keyframes bar {
-    0%,100% { opacity: 0.2; transform: scaleY(0.4); }
-    50% { opacity: 1; transform: scaleY(1); }
-  }
-
-  .empty {
-    text-align: center; padding: 80px 20px;
-    color: var(--muted); font-size: 0.82rem;
-    letter-spacing: 0.12em; text-transform: uppercase;
-  }
+  @keyframes bar { 0%,100% { opacity: 0.2; transform: scaleY(0.4); } 50% { opacity: 1; transform: scaleY(1); } }
+  .empty { text-align: center; padding: 80px 20px; color: var(--muted); font-size: 0.82rem; letter-spacing: 0.12em; text-transform: uppercase; }
 
   /* READER */
-  #reader {
-    position: fixed; inset: 0;
-    background: #050505;
-    z-index: 500; display: none; flex-direction: column;
-  }
+  #reader { position: fixed; inset: 0; background: #050505; z-index: 500; display: none; flex-direction: column; }
   #reader.open { display: flex; }
-
-  .reader-header {
-    display: flex; align-items: center;
-    justify-content: space-between;
-    padding: 11px 20px;
-    background: #0a0a0a;
-    border-bottom: 1px solid var(--border);
-    flex-shrink: 0; gap: 12px;
-  }
-
-  .reader-title {
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 1.15rem; font-weight: 700;
-    letter-spacing: 0.04em; color: var(--accent);
-    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-  }
-
-  .reader-count {
-    font-size: 0.72rem; color: var(--muted);
-    letter-spacing: 0.06em; flex-shrink: 0;
-  }
-
-  .close-btn {
-    background: transparent;
-    border: 1px solid var(--border);
-    color: var(--text);
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 0.82rem; font-weight: 700;
-    letter-spacing: 0.08em; text-transform: uppercase;
-    padding: 7px 16px; cursor: pointer; flex-shrink: 0;
-    transition: all 0.15s;
-  }
+  .reader-header { display: flex; align-items: center; justify-content: space-between; padding: 11px 20px; background: #0a0a0a; border-bottom: 1px solid var(--border); flex-shrink: 0; gap: 12px; }
+  .reader-title { font-family: 'Barlow Condensed', sans-serif; font-size: 1.15rem; font-weight: 700; letter-spacing: 0.04em; color: var(--accent); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .reader-count { font-size: 0.72rem; color: var(--muted); letter-spacing: 0.06em; flex-shrink: 0; }
+  .close-btn { background: transparent; border: 1px solid var(--border); color: var(--text); font-family: 'Barlow Condensed', sans-serif; font-size: 0.82rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; padding: 7px 16px; cursor: pointer; flex-shrink: 0; transition: all 0.15s; }
   .close-btn:hover { background: var(--red); border-color: var(--red); }
+  #pages-wrap { flex: 1; overflow-y: auto; display: flex; flex-direction: column; align-items: center; gap: 32px; padding: 32px 0 60px; scrollbar-width: thin; scrollbar-color: var(--border) transparent; }
+  .page-item { position: relative; width: 100%; max-width: 780px; }
+  .page-item img { width: 100%; display: block; }
+  .page-badge { position: absolute; top: 0; left: 0; background: #000; border: 1px solid #333; color: var(--accent); font-family: 'Bebas Neue', sans-serif; font-size: 0.85rem; letter-spacing: 0.06em; padding: 3px 8px; line-height: 1.4; z-index: 10; pointer-events: none; }
 
-  #pages-wrap {
-    flex: 1; overflow-y: auto;
-    display: flex; flex-direction: column;
-    align-items: center; gap: 32px;
-    padding: 32px 0 60px;
-    scrollbar-width: thin;
-    scrollbar-color: var(--border) transparent;
-  }
-
-  /* страница с номером в углу */
-  .page-item {
-    position: relative;
-    width: 100%;
-    max-width: 780px;
-  }
-
-.page-item {
-  position: relative;  /* ← добавь это
-  width: 100%;
-  max-width: 780px;
-}
-
-  .page-badge {
-    position: absolute;
-    top: 0; left: 0;
-    background: #000;
-    border: 1px solid #333;
-    color: var(--accent);
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 0.85rem;
-    letter-spacing: 0.06em;
-    padding: 3px 8px;
-    line-height: 1.4;
-    z-index: 10;
-    pointer-events: none;
-  }
-
-  #totop {
-    position: fixed; bottom: 24px; right: 20px;
-    width: 40px; height: 40px;
-    background: var(--accent); color: #000;
-    border: none; cursor: pointer;
-    font-size: 1rem; font-weight: 700;
-    display: flex; align-items: center; justify-content: center;
-    opacity: 0; transform: translateY(10px);
-    transition: all 0.25s; z-index: 300;
-  }
+  #totop { position: fixed; bottom: 24px; right: 20px; width: 40px; height: 40px; background: var(--accent); color: #000; border: none; cursor: pointer; font-size: 1rem; font-weight: 700; display: flex; align-items: center; justify-content: center; opacity: 0; transform: translateY(10px); transition: all 0.25s; z-index: 300; }
   #totop.show { opacity: 1; transform: translateY(0); }
 </style>
 </head>
@@ -336,9 +266,57 @@
     </div>
     <div class="logo-text">HENT<span>DEM</span></div>
   </div>
+
   <div class="search-box">
     <input type="text" id="search" placeholder="Поиск...">
     <div class="search-icon" onclick="doSearch()">⌕</div>
+  </div>
+
+  <!-- PROFILE -->
+  <div class="profile-wrap">
+    <button class="profile-btn" id="profile-btn" onclick="toggleDropdown()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <circle cx="12" cy="8" r="4"/>
+        <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
+      </svg>
+      <div class="profile-name-badge" id="profile-badge"></div>
+    </button>
+
+    <div class="profile-dropdown" id="profile-dropdown">
+
+      <!-- не залогинен -->
+      <div id="auth-panel">
+        <div class="dropdown-header">Аккаунт</div>
+        <div class="dropdown-tabs">
+          <button class="dtab active" onclick="switchTab('login')">Вход</button>
+          <button class="dtab" onclick="switchTab('reg')">Регистрация</button>
+        </div>
+
+        <div class="dropdown-form" id="login-form">
+          <input class="dinput" id="l-name" placeholder="Имя пользователя">
+          <input class="dinput" id="l-pass" placeholder="Пароль" type="password">
+          <div class="dmsg" id="l-msg"></div>
+          <button class="dsubmit" onclick="doLogin()">Войти</button>
+        </div>
+
+        <div class="dropdown-form" id="reg-form" style="display:none">
+          <input class="dinput" id="r-name" placeholder="Имя пользователя">
+          <input class="dinput" id="r-pass" placeholder="Пароль">
+          <div class="dmsg" id="r-msg"></div>
+          <button class="dsubmit" onclick="doRegister()">Зарегистрироваться</button>
+        </div>
+      </div>
+
+      <!-- залогинен -->
+      <div id="logged-panel" style="display:none">
+        <div class="logged-info">
+          <div class="logged-username" id="logged-name"></div>
+          <div class="logged-sub">вы вошли в аккаунт</div>
+        </div>
+        <button class="dlogout" onclick="doLogout()">Выйти</button>
+      </div>
+
+    </div>
   </div>
 </header>
 
@@ -349,9 +327,7 @@
 <div class="container">
   <div class="results-info" id="results-info"></div>
   <div class="card-list" id="card-list">
-    <div class="loader">
-      <div class="dot"></div><div class="dot"></div><div class="dot"></div>
-    </div>
+    <div class="loader"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
   </div>
 </div>
 
@@ -369,18 +345,108 @@
 <script>
   let allManga = [];
   let activeGenre = 'all';
+  let currentUser = localStorage.getItem('hd_user') || null;
+
+  // init profile state
+  updateProfileUI();
 
   window.addEventListener('scroll', () => {
     document.getElementById('totop').classList.toggle('show', scrollY > 400);
   });
 
+  // close dropdown on outside click
+  document.addEventListener('click', e => {
+    const wrap = document.getElementById('profile-dropdown');
+    const btn = document.getElementById('profile-btn');
+    if (!wrap.contains(e.target) && !btn.contains(e.target)) {
+      wrap.classList.remove('open');
+    }
+  });
+
+  function toggleDropdown() {
+    document.getElementById('profile-dropdown').classList.toggle('open');
+  }
+
+  function switchTab(tab) {
+    document.querySelectorAll('.dtab').forEach((b,i) => b.classList.toggle('active', (i===0&&tab==='login')||(i===1&&tab==='reg')));
+    document.getElementById('login-form').style.display = tab === 'login' ? 'flex' : 'none';
+    document.getElementById('reg-form').style.display  = tab === 'reg'   ? 'flex' : 'none';
+    document.getElementById('l-msg').textContent = '';
+    document.getElementById('r-msg').textContent = '';
+  }
+
+  function updateProfileUI() {
+    const btn = document.getElementById('profile-btn');
+    const badge = document.getElementById('profile-badge');
+    const authPanel = document.getElementById('auth-panel');
+    const loggedPanel = document.getElementById('logged-panel');
+    const loggedName = document.getElementById('logged-name');
+    if (currentUser) {
+      btn.classList.add('logged');
+      badge.textContent = currentUser.slice(0,3).toUpperCase();
+      authPanel.style.display = 'none';
+      loggedPanel.style.display = 'block';
+      loggedName.textContent = currentUser;
+    } else {
+      btn.classList.remove('logged');
+      badge.textContent = '';
+      authPanel.style.display = 'block';
+      loggedPanel.style.display = 'none';
+    }
+  }
+
+  async function doLogin() {
+    const name = document.getElementById('l-name').value.trim();
+    const pass = document.getElementById('l-pass').value.trim();
+    const msg  = document.getElementById('l-msg');
+    if (!name || !pass) { setMsg(msg, 'Заполни все поля', 'err'); return; }
+    try {
+      const r = await fetch('/users/login', {
+        method: 'POST', headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({name, password: pass})
+      });
+      const data = await r.json();
+      if (!r.ok) { setMsg(msg, data.detail, 'err'); return; }
+      currentUser = name;
+      localStorage.setItem('hd_user', name);
+      updateProfileUI();
+      document.getElementById('profile-dropdown').classList.remove('open');
+    } catch(e) { setMsg(msg, 'Ошибка сети', 'err'); }
+  }
+
+  async function doRegister() {
+    const name = document.getElementById('r-name').value.trim();
+    const pass = document.getElementById('r-pass').value.trim();
+    const msg  = document.getElementById('r-msg');
+    if (!name || !pass) { setMsg(msg, 'Заполни все поля', 'err'); return; }
+    try {
+      const r = await fetch('/users/reg', {
+        method: 'POST', headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({name, password: pass})
+      });
+      const data = await r.json();
+      if (!r.ok) { setMsg(msg, data.detail, 'err'); return; }
+      setMsg(msg, 'Готово! Теперь войди', 'ok');
+      setTimeout(() => switchTab('login'), 1200);
+    } catch(e) { setMsg(msg, 'Ошибка сети', 'err'); }
+  }
+
+  function doLogout() {
+    currentUser = null;
+    localStorage.removeItem('hd_user');
+    updateProfileUI();
+    document.getElementById('profile-dropdown').classList.remove('open');
+  }
+
+  function setMsg(el, text, type) {
+    el.textContent = text;
+    el.className = 'dmsg ' + type;
+  }
+
+  // search
   let timer;
-  document.getElementById('search').addEventListener('input', () => {
-    clearTimeout(timer); timer = setTimeout(doSearch, 300);
-  });
-  document.getElementById('search').addEventListener('keydown', e => {
-    if (e.key === 'Enter') doSearch();
-  });
+  document.getElementById('search').addEventListener('input', () => { clearTimeout(timer); timer = setTimeout(doSearch, 300); });
+  document.getElementById('search').addEventListener('keydown', e => { if (e.key === 'Enter') doSearch(); });
 
   async function loadManga() {
     try {
@@ -391,8 +457,7 @@
       buildGenres(allManga);
       render(allManga);
     } catch(e) {
-      document.getElementById('card-list').innerHTML =
-        `<div class="empty">Ошибка загрузки: ${e.message}</div>`;
+      document.getElementById('card-list').innerHTML = `<div class="empty">Ошибка загрузки: ${e.message}</div>`;
     }
   }
 
@@ -402,9 +467,7 @@
     const bar = document.getElementById('genre-bar');
     set.forEach(g => {
       const btn = document.createElement('button');
-      btn.className = 'genre-btn';
-      btn.textContent = g;
-      btn.dataset.genre = g;
+      btn.className = 'genre-btn'; btn.textContent = g; btn.dataset.genre = g;
       btn.onclick = () => setGenre(btn, g);
       bar.appendChild(btn);
     });
@@ -412,18 +475,14 @@
 
   function setGenre(btn, genre) {
     document.querySelectorAll('.genre-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    activeGenre = genre;
-    doSearch();
+    btn.classList.add('active'); activeGenre = genre; doSearch();
   }
 
   function doSearch() {
     const q = document.getElementById('search').value.trim().toLowerCase();
     let list = allManga;
-    if (activeGenre !== 'all')
-      list = list.filter(m => (m.genre||'').split(',').map(g=>g.trim()).includes(activeGenre));
-    if (q)
-      list = list.filter(m => m.name.toLowerCase().includes(q));
+    if (activeGenre !== 'all') list = list.filter(m => (m.genre||'').split(',').map(g=>g.trim()).includes(activeGenre));
+    if (q) list = list.filter(m => m.name.toLowerCase().includes(q));
     render(list, q || activeGenre !== 'all');
   }
 
@@ -442,8 +501,7 @@
       card.innerHTML = `
         <div class="card-thumb">
           ${imgSrc
-            ? `<img src="${imgSrc}" alt="${m.name}" loading="lazy"
-                onerror="this.parentElement.innerHTML='<div class=card-thumb-placeholder>${m.name.slice(0,2).toUpperCase()}</div>'">`
+            ? `<img src="${imgSrc}" alt="${m.name}" loading="lazy" onerror="this.parentElement.innerHTML='<div class=card-thumb-placeholder>${m.name.slice(0,2).toUpperCase()}</div>'">`
             : `<div class="card-thumb-placeholder">${m.name.slice(0,2).toUpperCase()}</div>`}
           <div class="read-badge">Читать</div>
         </div>
@@ -468,7 +526,6 @@
     wrap.innerHTML = `<div class="loader"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>`;
     reader.classList.add('open');
     document.body.style.overflow = 'hidden';
-
     try {
       const r = await fetch(`/manga/${encodeURIComponent(name)}`);
       if (!r.ok) throw new Error(r.status);
@@ -481,10 +538,7 @@
         item.className = 'page-item';
         item.innerHTML = `
           <div class="page-badge">${i + 1}</div>
-          <img src="/media/${encodeURIComponent(name)}/${p}"
-               alt="стр. ${i+1}"
-               loading="${i < 2 ? 'eager' : 'lazy'}">
-        `;
+          <img src="/media/${encodeURIComponent(name)}/${p}" alt="стр. ${i+1}" loading="${i < 2 ? 'eager' : 'lazy'}">`;
         wrap.appendChild(item);
       });
     } catch(e) {

@@ -20,3 +20,12 @@ class Users(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     password: Mapped[str] = mapped_column(String)
     user_name:Mapped[str] = mapped_column(String(64), unique=True)
+
+
+
+class Main(Base):
+    __tablename__ = 'main'
+
+    for i in arr:
+        if i not in arr:
+            return '12'

@@ -6,6 +6,7 @@ from fastapi.responses import FileResponse
 from pathlib import Path
 from sqlalchemy import select
 from sqlalchemy.orm import Session
+from app.models.models import Users
 
 from app.routers.handlers import router
 from app.models.models import Manga, Base

@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HENTDEM</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+
+<header>
+  <div class="logo" onclick="closeReader()">
+    <div class="logo-icon">
+      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="3" y="3" width="7" height="10" fill="#000"/>
+        <rect x="14" y="3" width="7" height="10" fill="#000"/>
+        <rect x="3" y="15" width="7" height="6" fill="#000"/>
+        <rect x="14" y="15" width="7" height="6" fill="#000"/>
+      </svg>
+    </div>
+    <div class="logo-text">HENT<span>DEM</span></div>
+  </div>
+
+  <div class="search-box">
+    <input type="text" id="search" placeholder="Поиск..." autocomplete="off" name="manga-search">
+    <div class="search-icon" onclick="doSearch()">⌕</div>
+  </div>
+
+  <div class="profile-wrap">
+    <button class="profile-btn" id="profile-btn" onclick="toggleDropdown()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <circle cx="12" cy="8" r="4"/>
+        <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
+      </svg>
+      <div class="profile-name-badge" id="profile-badge"></div>
+    </button>
+
+    <div class="profile-dropdown" id="profile-dropdown">
+      <div id="auth-panel">
+        <div class="dropdown-header">Аккаунт</div>
+        <div class="dropdown-tabs">
+          <button class="dtab active" onclick="switchTab('login')">Вход</button>
+          <button class="dtab" onclick="switchTab('reg')">Регистрация</button>
+        </div>
+        <div class="dropdown-form" id="login-form">
+          <input class="dinput" id="l-name" placeholder="Имя пользователя" autocomplete="off">
+          <input class="dinput" id="l-pass" placeholder="Пароль" type="password" autocomplete="off">
+          <div class="dmsg" id="l-msg"></div>
+          <button class="dsubmit" onclick="doLogin()">Войти</button>
+        </div>
+        <div class="dropdown-form" id="reg-form" style="display:none">
+          <input class="dinput" id="r-name" placeholder="Имя пользователя" autocomplete="off">
+          <input class="dinput" id="r-pass" placeholder="Пароль" autocomplete="off">
+          <div class="dmsg" id="r-msg"></div>
+          <button class="dsubmit" onclick="doRegister()">Зарегистрироваться</button>
+        </div>
+      </div>
+      <div id="logged-panel" style="display:none">
+        <div class="logged-info">
+          <div class="logged-username" id="logged-name"></div>
+          <div class="logged-sub">вы вошли в аккаунт</div>
+        </div>
+        <button class="dlogout" onclick="doLogout()">Выйти</button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="genre-bar" id="genre-bar">
+  <button class="genre-btn active" data-genre="all" onclick="setGenre(this,'all')">Все</button>
+</div>
+
+<div class="container">
+  <div class="results-info" id="results-info"></div>
+  <div class="card-list" id="card-list">
+    <div class="loader"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+  </div>
+</div>
+
+<div id="reader">
+  <div class="reader-header">
+    <div class="reader-title" id="reader-title">—</div>
+    <div class="reader-count" id="reader-count"></div>
+    <button class="close-btn" onclick="closeReader()">✕ Закрыть</button>
+  </div>
+  <div id="pages-wrap"></div>
+</div>
+
+<button id="totop" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('search').value = '';
+  });
+</script>
+<script src="/static/js/reader.js"></script>
+</body>
+</html>

@@ -5,9 +5,14 @@ let currentUser = localStorage.getItem('hd_user') || null;
 updateProfileUI();
 
 window.addEventListener('load', () => {
-  setTimeout(() => {
-    document.getElementById('search').value = '';
-  }, 100);
+  setTimeout(() => { document.getElementById('search').value = ''; }, 100);
+  const match = location.pathname.match(/^\/read\/(.+)$/);
+  if (match) openReader(decodeURIComponent(match[1]));
+});
+
+window.addEventListener('popstate', e => {
+  if (e.state?.manga) openReader(e.state.manga);
+  else closeReader();
 });
 
 document.addEventListener('click', e => {
@@ -33,11 +38,11 @@ function switchTab(tab) {
 }
 
 function updateProfileUI() {
-  const btn        = document.getElementById('profile-btn');
-  const badge      = document.getElementById('profile-badge');
-  const authPanel  = document.getElementById('auth-panel');
+  const btn         = document.getElementById('profile-btn');
+  const badge       = document.getElementById('profile-badge');
+  const authPanel   = document.getElementById('auth-panel');
   const loggedPanel = document.getElementById('logged-panel');
-  const loggedName = document.getElementById('logged-name');
+  const loggedName  = document.getElementById('logged-name');
   if (currentUser) {
     btn.classList.add('logged');
     badge.textContent = currentUser.slice(0, 3).toUpperCase();
@@ -52,7 +57,6 @@ function updateProfileUI() {
   }
 }
 
-// парсим ошибку от FastAPI/Pydantic — может быть строкой или массивом объектов
 function parseError(data) {
   if (typeof data.detail === 'string') return data.detail;
   if (Array.isArray(data.detail)) {
@@ -109,7 +113,6 @@ function setMsg(el, text, type) {
   el.className = 'dmsg ' + type;
 }
 
-// поиск
 let searchTimer;
 document.getElementById('search').addEventListener('input', () => {
   clearTimeout(searchTimer); searchTimer = setTimeout(doSearch, 300);
@@ -193,6 +196,7 @@ function render(list, filtered = false) {
 }
 
 async function openReader(name) {
+  history.pushState({ manga: name }, '', `/read/${encodeURIComponent(name)}`);
   const reader = document.getElementById('reader');
   const wrap   = document.getElementById('pages-wrap');
   document.getElementById('reader-title').textContent = name;
@@ -223,6 +227,7 @@ async function openReader(name) {
 }
 
 function closeReader() {
+  history.pushState({}, '', '/');
   document.getElementById('reader').classList.remove('open');
   document.getElementById('pages-wrap').innerHTML = '';
   document.body.style.overflow = '';

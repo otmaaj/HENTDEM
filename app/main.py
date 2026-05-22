@@ -47,3 +47,7 @@ app.mount("/static", StaticFiles(directory=BASE_DIR / "static"), name="static")
 @app.get("/")
 def index():
     return FileResponse(BASE_DIR / "static" / "index.html")
+
+@app.get("/read/{manga}")
+def read_page(manga: str):
+    return FileResponse(BASE_DIR / "static" / "index.html")

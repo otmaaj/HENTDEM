@@ -13,7 +13,9 @@ router = APIRouter(prefix='/users')
 @router.post('/reg')
 def registration(user : UserCreate, db : Session = Depends(get_db)):
     try:
-        db.add(Users(user_name= user.name, password= user.password))
+        new_user = Users(user_name= user.name,
+                     password= user.password)
+        db.add(new_user)
         db.commit()
     except IntegrityError:
         db.rollback()

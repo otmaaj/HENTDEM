@@ -14,19 +14,22 @@
 html { scroll-behavior: smooth; }
 body { background: var(--bg); color: var(--text); font-family: 'Barlow', sans-serif; min-height: 100vh; }
 
-/* HEADER */
+
 header {
   position: sticky; top: 0; z-index: 200;
   background: #0e0e0e; border-bottom: 1px solid var(--border);
   display: flex; align-items: center; gap: 20px;
-  padding: 0 20px; height: 54px;
+  padding: 0 20px; height: 54px; position: relative;
 }
 
 .logo { display: flex; align-items: center; gap: 10px; flex-shrink: 0; cursor: pointer; }
-.logo-icon { width: 36px; height: 36px; background: var(--accent); display: flex; align-items: center; justify-content: center; }
-.logo-icon svg { width: 22px; height: 22px; }
-.logo-text { font-family: 'Bebas Neue', sans-serif; font-size: 1.6rem; letter-spacing: 0.08em; line-height: 1; color: var(--text); }
-.logo-text span { color: var(--accent); }
+.logo { display: flex; align-items: center; gap: 10px; flex-shrink: 0; cursor: pointer; }
+.logo-icon { font-size: 30px; display: flex; align-items: center; }
+.logo-icon svg { width: 42px; height: 42px; }
+.logo-icon img { width: 80px; height: 80px; object-fit: contain; }
+.logo-text { width: 47px; font-size: 30px; font-weight: 600; letter-spacing: 0.05em; }
+.logo-text span { color: var(--accent); font-weight: 700; }
+.search-box { position: absolute; left: 50%; transform: translateX(-50%); width: 400px; display: flex; border: 1px solid var(--border); background: var(--surface);}
 
 .search-box { flex: 1; max-width: 400px; display: flex; border: 1px solid var(--border); background: var(--surface); }
 .search-box:focus-within { border-color: var(--accent); }
@@ -117,3 +120,11 @@ header {
 
 #totop { position: fixed; bottom: 24px; right: 20px; width: 40px; height: 40px; background: var(--accent); color: #000; border: none; cursor: pointer; font-size: 1rem; font-weight: 700; display: flex; align-items: center; justify-content: center; opacity: 0; transform: translateY(10px); transition: all 0.25s; z-index: 300; }
 #totop.show { opacity: 1; transform: translateY(0); }
+
+
+@media (max-width: 600px) {
+  header { padding: 0 12px; gap: 10px; height: 54px; }
+  .search-box { position: static; transform: none; width: auto; flex: 1; }
+  .logo-icon img { width: 40px; height: 40px; }
+  .logo-text { display: none; }
+}

@@ -11,13 +11,12 @@
 <body>
 
 <header>
-  <div class="logo" onclick="closeReader()">
+  <div class="logo" onclick="closeReader(); closeFav();">
     <div class="logo-icon">
-   <img src="/static/photo_2026-05-23_18-39-02.png" alt="logo">
+      <img src="/static/photo_2026-05-23_18-39-02.png" alt="logo">
     </div>
-     <div class="logo-text">HENT<span>DEM</span></div>
+    <div class="logo-text">HENT<span>DEM</span></div>
   </div>
-   
 
   <div class="search-box">
     <input type="text" id="search" placeholder="Поиск..." autocomplete="off" name="manga-search">
@@ -53,11 +52,12 @@
           <button class="dsubmit" onclick="doRegister()">Зарегистрироваться</button>
         </div>
       </div>
-      <div id="logged-panel" style="display:none"></div>
+      <div id="logged-panel" style="display:none">
         <div class="logged-info">
           <div class="logged-username" id="logged-name"></div>
           <div class="logged-sub">вы вошли в аккаунт</div>
         </div>
+        <button class="dfav-btn" onclick="openFav()">♥ Избранное</button>
         <button class="dlogout" onclick="doLogout()">Выйти</button>
       </div>
     </div>
@@ -82,6 +82,16 @@
     <button class="close-btn" onclick="closeReader()">✕ Закрыть</button>
   </div>
   <div id="pages-wrap"></div>
+</div>
+
+<div id="fav-overlay">
+  <div class="fav-header">
+    <div class="fav-title">♥ Избранное</div>
+    <button class="close-btn" onclick="closeFav()">✕ Закрыть</button>
+  </div>
+  <div class="fav-body">
+    <div class="card-list" id="fav-list"></div>
+  </div>
 </div>
 
 <button id="totop" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>

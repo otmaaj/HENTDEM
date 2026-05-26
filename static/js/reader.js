@@ -12,7 +12,7 @@ window.addEventListener('load', () => {
 
 window.addEventListener('popstate', e => {
   if (e.state?.manga) openReader(e.state.manga);
-  else closeReader();
+  else { closeReader(); closeFav(); }
 });
 
 document.addEventListener('click', e => {
@@ -59,9 +59,7 @@ function updateProfileUI() {
 
 function parseError(data) {
   if (typeof data.detail === 'string') return data.detail;
-  if (Array.isArray(data.detail)) {
-    return data.detail.map(e => e.msg.replace('Value error, ', '')).join(' / ');
-  }
+  if (Array.isArray(data.detail)) return data.detail.map(e => e.msg.replace('Value error, ', '')).join(' / ');
   return 'Ошибка';
 }
 
@@ -81,6 +79,7 @@ async function doLogin() {
     localStorage.setItem('hd_user', name);
     updateProfileUI();
     document.getElementById('profile-dropdown').classList.remove('open');
+    render(allManga);
   } catch(e) { setMsg(msg, 'Ошибка сети', 'err'); }
 }
 
@@ -106,6 +105,7 @@ function doLogout() {
   localStorage.removeItem('hd_user');
   updateProfileUI();
   document.getElementById('profile-dropdown').classList.remove('open');
+  render(allManga);
 }
 
 function setMsg(el, text, type) {
@@ -113,6 +113,45 @@ function setMsg(el, text, type) {
   el.className = 'dmsg ' + type;
 }
 
+// FAVOURITES
+async function toggleFav(e, mangaName) {
+  e.stopPropagation();
+  if (!currentUser) { alert('Войдите в аккаунт'); return; }
+  const btn = e.currentTarget;
+  const isActive = btn.classList.contains('active');
+  const url = isActive
+    ? `/manga/fav_del?user_name=${encodeURIComponent(currentUser)}&manga_name=${encodeURIComponent(mangaName)}`
+    : `/manga/add?user_name=${encodeURIComponent(currentUser)}&manga_name=${encodeURIComponent(mangaName)}`;
+  try {
+    const r = await fetch(url, { method: 'POST' });
+    if (!r.ok) { const d = await r.json(); alert(parseError(d)); return; }
+    btn.classList.toggle('active');
+  } catch(e) { alert('Ошибка сети'); }
+}
+
+async function openFav() {
+  document.getElementById('profile-dropdown').classList.remove('open');
+  const overlay = document.getElementById('fav-overlay');
+  const list    = document.getElementById('fav-list');
+  overlay.classList.add('open');
+  document.body.style.overflow = 'hidden';
+  list.innerHTML = `<div class="loader"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>`;
+  try {
+    const r = await fetch(`/manga/fav_list?user_name=${encodeURIComponent(currentUser)}`);
+    if (!r.ok) { const d = await r.json(); list.innerHTML = `<div class="empty">${d.detail}</div>`; return; }
+    const data = await r.json();
+    renderCards(data.manga || [], list, true);
+  } catch(e) {
+    list.innerHTML = `<div class="empty">Ошибка: ${e.message}</div>`;
+  }
+}
+
+function closeFav() {
+  document.getElementById('fav-overlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+// SEARCH
 let searchTimer;
 document.getElementById('search').addEventListener('input', () => {
   clearTimeout(searchTimer); searchTimer = setTimeout(doSearch, 300);
@@ -165,7 +204,11 @@ function doSearch() {
 function render(list, filtered = false) {
   const el = document.getElementById('card-list');
   document.getElementById('results-info').textContent = filtered ? `Найдено: ${list.length}` : '';
-  if (!list.length) { el.innerHTML = `<div class="empty">Ничего не найдено</div>`; return; }
+  renderCards(list, el, false);
+}
+
+function renderCards(list, el, isFav = false) {
+  if (!list.length) { el.innerHTML = `<div class="empty">${isFav ? 'Избранное пусто' : 'Ничего не найдено'}</div>`; return; }
   el.innerHTML = '';
   list.forEach((m, i) => {
     const genres = (m.genre || 'другое').split(',').map(g => g.trim());
@@ -189,8 +232,20 @@ function render(list, filtered = false) {
           <div class="card-genres">${genres.map(g=>`<span class="tag">${g}</span>`).join('')}</div>
         </div>
         <div class="card-arrow">›</div>
+        ${currentUser ? `<div class="fav-heart ${isFav ? 'active' : ''}">♥</div>` : ''}
       </div>`;
-    card.onclick = () => openReader(m.name);
+
+    // вешаем обработчик через querySelector — не через onclick в html
+    const heart = card.querySelector('.fav-heart');
+    if (heart) {
+      heart.addEventListener('click', e => toggleFav(e, m.name));
+    }
+
+    if (isFav) {
+      card.onclick = () => { closeFav(); openReader(m.name); };
+    } else {
+      card.onclick = () => openReader(m.name);
+    }
     el.appendChild(card);
   });
 }
@@ -233,6 +288,6 @@ function closeReader() {
   document.body.style.overflow = '';
 }
 
-document.addEventListener('keydown', e => { if (e.key === 'Escape') closeReader(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeReader(); closeFav(); } });
 
 loadManga();

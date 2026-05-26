@@ -8,7 +8,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 from app.routers.users import router as users_router
 from app.routers.handlers import router
-from app.models.models import Manga, Base
+from app.models.models import Manga, Base, Favourites, Users
 from app.models.connection import engine
 from app.services.services import MEDIA_DIR
 

@@ -151,7 +151,7 @@ function closeFav() {
   document.body.style.overflow = '';
 }
 
-// SEARCH
+
 let searchTimer;
 document.getElementById('search').addEventListener('input', () => {
   clearTimeout(searchTimer); searchTimer = setTimeout(doSearch, 300);
@@ -181,43 +181,24 @@ function buildGenres(list) {
   set.forEach(g => {
     const btn = document.createElement('button');
     btn.className = 'genre-btn'; btn.textContent = g; btn.dataset.genre = g;
-    btn.onclick = () => toggleGenre(btn, g);
+    btn.onclick = () => setGenre(btn, g);
     bar.appendChild(btn);
   });
 }
 
-function toggleGenre(btn, genre) {
-  if (activeGenres.has(genre)) {
-    activeGenres.delete(genre);
-    btn.classList.remove('active');
-  } else {
-    activeGenres.add(genre);
-    btn.classList.add('active');
-  }
-  document.querySelector('.genre-btn[data-genre="all"]')
-    .classList.toggle('active', activeGenres.size === 0);
-  doSearch();
-}
-
 function setGenre(btn, genre) {
-  // только для кнопки "Все"
-  activeGenres.clear();
   document.querySelectorAll('.genre-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  doSearch();
+  btn.classList.add('active'); activeGenre = genre; doSearch();
 }
 
 function doSearch() {
   const q = document.getElementById('search').value.trim().toLowerCase();
   let list = allManga;
-  if (activeGenres.size > 0)
-    list = list.filter(m => {
-      const genres = (m.genre || '').split(',').map(g => g.trim());
-      return [...activeGenres].every(g => genres.includes(g));
-    });
+  if (activeGenre !== 'all')
+    list = list.filter(m => (m.genre||'').split(',').map(g=>g.trim()).includes(activeGenre));
   if (q)
     list = list.filter(m => m.name.toLowerCase().includes(q));
-  render(list, q || activeGenres.size > 0);
+  render(list, q || activeGenre !== 'all');
 }
 
 function render(list, filtered = false) {
@@ -251,13 +232,23 @@ function renderCards(list, el, isFav = false) {
           <div class="card-genres">${genres.map(g=>`<span class="tag">${g}</span>`).join('')}</div>
         </div>
         <div class="card-arrow">›</div>
-        ${currentUser ? `<div class="fav-heart ${isFav ? 'active' : ''}">♥</div>` : ''}
+       ${currentUser ? `<div class="fav-heart ${isFav ? 'active' : ''}">♥</div>${isFav ? '<div class="fav-delete">🗑</div>' : ''}` : ''}
       </div>`;
 
+    // вешаем обработчик через querySelector — не через onclick в html
     const heart = card.querySelector('.fav-heart');
-    if (heart) {
-      heart.addEventListener('click', e => toggleFav(e, m.name));
-    }
+if (heart) {
+  heart.addEventListener('click', e => toggleFav(e, m.name));
+}
+const del = card.querySelector('.fav-delete');
+if (del) {
+  del.addEventListener('click', async e => {
+    e.stopPropagation();
+    const url = `/manga/fav_del?user_name=${encodeURIComponent(currentUser)}&manga_name=${encodeURIComponent(m.name)}`;
+    await fetch(url, { method: 'POST' });
+    card.remove();
+  });
+}
 
     if (isFav) {
       card.onclick = () => { closeFav(); openReader(m.name); };

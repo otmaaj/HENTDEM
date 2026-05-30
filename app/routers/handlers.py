@@ -1,5 +1,5 @@
-from fastapi import APIRouter, HTTPException, Depends
-from app.services.services import get_manga_list, get_pages, get_photo
+from fastapi import APIRouter, HTTPException, Depends, Query
+from app.services.services import get_manga_list, get_pages, get_photo, get_genre_list
 from app.models.connection import Session, get_db
 from app.models.models import Manga, Favourites, Users
 from sqlalchemy import select
@@ -7,12 +7,16 @@ from sqlalchemy.exc import IntegrityError
 
 router = APIRouter(prefix="/manga")
 
-
 @router.get('/search')
-def check(q: str = None):
+def check(q: str = None, genre : list[str] = Query(default=[])):
     manga = get_manga_list()
     if q:
         manga = [f for f in manga if q.lower() in f.lower()]
+    if genre:
+        manga = [
+            m for m in manga
+            if all(tag in get_genre_list(m) for tag in genre)
+        ]
     return {'manga': manga}
 
 

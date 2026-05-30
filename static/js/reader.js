@@ -1,5 +1,5 @@
 let allManga = [];
-let activeGenre = 'all';
+let activeGenres = new Set();
 let currentUser = localStorage.getItem('hd_user') || null;
 
 updateProfileUI();
@@ -181,24 +181,43 @@ function buildGenres(list) {
   set.forEach(g => {
     const btn = document.createElement('button');
     btn.className = 'genre-btn'; btn.textContent = g; btn.dataset.genre = g;
-    btn.onclick = () => setGenre(btn, g);
+    btn.onclick = () => toggleGenre(btn, g);
     bar.appendChild(btn);
   });
 }
 
+function toggleGenre(btn, genre) {
+  if (activeGenres.has(genre)) {
+    activeGenres.delete(genre);
+    btn.classList.remove('active');
+  } else {
+    activeGenres.add(genre);
+    btn.classList.add('active');
+  }
+  document.querySelector('.genre-btn[data-genre="all"]')
+    .classList.toggle('active', activeGenres.size === 0);
+  doSearch();
+}
+
 function setGenre(btn, genre) {
+  // только для кнопки "Все"
+  activeGenres.clear();
   document.querySelectorAll('.genre-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active'); activeGenre = genre; doSearch();
+  btn.classList.add('active');
+  doSearch();
 }
 
 function doSearch() {
   const q = document.getElementById('search').value.trim().toLowerCase();
   let list = allManga;
-  if (activeGenre !== 'all')
-    list = list.filter(m => (m.genre||'').split(',').map(g=>g.trim()).includes(activeGenre));
+  if (activeGenres.size > 0)
+    list = list.filter(m => {
+      const genres = (m.genre || '').split(',').map(g => g.trim());
+      return [...activeGenres].every(g => genres.includes(g));
+    });
   if (q)
     list = list.filter(m => m.name.toLowerCase().includes(q));
-  render(list, q || activeGenre !== 'all');
+  render(list, q || activeGenres.size > 0);
 }
 
 function render(list, filtered = false) {
@@ -235,7 +254,6 @@ function renderCards(list, el, isFav = false) {
         ${currentUser ? `<div class="fav-heart ${isFav ? 'active' : ''}">♥</div>` : ''}
       </div>`;
 
-    // вешаем обработчик через querySelector — не через onclick в html
     const heart = card.querySelector('.fav-heart');
     if (heart) {
       heart.addEventListener('click', e => toggleFav(e, m.name));

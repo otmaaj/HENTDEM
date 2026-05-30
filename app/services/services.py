@@ -1,4 +1,5 @@
 from pathlib import Path
+import json
 
 BASE_DIR = Path(__file__).parent.parent.parent  # FASTAPI/
 MEDIA_DIR = BASE_DIR / 'media'
@@ -7,6 +8,15 @@ def get_manga_list():
     if not MEDIA_DIR.exists():
         return []
     return sorted([f.name for f in MEDIA_DIR.iterdir() if f.is_dir()])
+
+
+def get_genre_list(title : str) -> list:
+    TAG_DIR = MEDIA_DIR/title/'info.json'
+    if not TAG_DIR.exists():
+        return ['другое']
+    with open(TAG_DIR) as f:
+        return json.load(f).get("genre", [])
+
 
 def get_photo(manga : str):
     photo_file = MEDIA_DIR / manga

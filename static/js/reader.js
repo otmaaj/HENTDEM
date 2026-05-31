@@ -187,18 +187,28 @@ function buildGenres(list) {
 }
 
 function setGenre(btn, genre) {
-  document.querySelectorAll('.genre-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active'); activeGenre = genre; doSearch();
+  if (genre === 'all') {
+    document.querySelectorAll('.genre-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    activeGenres = new Set();
+  } else {
+    document.querySelector('[data-genre="all"]').classList.remove('active');
+    btn.classList.toggle('active');
+    if (activeGenres.has(genre)) activeGenres.delete(genre);
+    else activeGenres.add(genre);
+    if (activeGenres.size === 0) document.querySelector('[data-genre="all"]').classList.add('active');
+  }
+  doSearch();
 }
 
 function doSearch() {
   const q = document.getElementById('search').value.trim().toLowerCase();
   let list = allManga;
-  if (activeGenre !== 'all')
-    list = list.filter(m => (m.genre||'').split(',').map(g=>g.trim()).includes(activeGenre));
+  if (activeGenres.size > 0)
+    list = list.filter(m => [...activeGenres].every(g => (m.genre||'').split(',').map(x=>x.trim()).includes(g)));
   if (q)
     list = list.filter(m => m.name.toLowerCase().includes(q));
-  render(list, q || activeGenre !== 'all');
+  render(list, q || activeGenres.size > 0);
 }
 
 function render(list, filtered = false) {
@@ -232,7 +242,7 @@ function renderCards(list, el, isFav = false) {
           <div class="card-genres">${genres.map(g=>`<span class="tag">${g}</span>`).join('')}</div>
         </div>
         <div class="card-arrow">›</div>
-       ${currentUser ? `<div class="fav-heart ${isFav ? 'active' : ''}">♥</div>${isFav ? '<div class="fav-delete">🗑</div>' : ''}` : ''}
+     ${currentUser && !isFav ? `<div class="fav-heart">♥</div>` : ''}${isFav ? '<div class="fav-delete">🗑</div>' : ''}
       </div>`;
 
     // вешаем обработчик через querySelector — не через onclick в html

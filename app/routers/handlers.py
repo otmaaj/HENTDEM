@@ -93,4 +93,4 @@ def pages(manga: str, db: Session = Depends(get_db)):
     result = get_pages(manga)
     if not result:
         raise HTTPException(status_code=404, detail="Ошибка сервера")
-    return {"manga": manga, "pages": result}
+    return {"manga": manga, "pages": result, "views": manga_obj.views if manga_obj else 0}

@@ -85,8 +85,12 @@ def delete_favourite(user_name : str, manga_name: str, db : Session = Depends(ge
 
 
 @router.get('/{manga}')
-def pages(manga: str):
+def pages(manga: str, db: Session = Depends(get_db)):
+    manga_obj = db.execute(select(Manga).where(Manga.name == manga)).scalar()
+    if manga_obj:
+        manga_obj.views += 1
+        db.commit()
     result = get_pages(manga)
-    if result is None:
+    if not result:
         raise HTTPException(status_code=404, detail="Ошибка сервера")
     return {"manga": manga, "pages": result}

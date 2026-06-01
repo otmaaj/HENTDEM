@@ -12,6 +12,7 @@ class Manga(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(String(128), unique=True)
     genre: Mapped[str] = mapped_column(String(256), default='другое')
+    views : Mapped[int] = mapped_column(default=0)
 
 
 class Users(Base):

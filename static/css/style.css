@@ -109,7 +109,6 @@ header {
 @keyframes bar { 0%,100% { opacity: 0.2; transform: scaleY(0.4); } 50% { opacity: 1; transform: scaleY(1); } }
 .empty { text-align: center; padding: 80px 20px; color: var(--muted); font-size: 0.82rem; letter-spacing: 0.12em; text-transform: uppercase; }
 
-/* READER */
 #reader { position: fixed; inset: 0; background: #050505; z-index: 500; display: none; flex-direction: column; }
 #reader.open { display: flex; }
 .reader-header { display: flex; align-items: center; justify-content: space-between; padding: 11px 20px; background: #0a0a0a; border-bottom: 1px solid var(--border); flex-shrink: 0; gap: 12px; }
@@ -118,10 +117,47 @@ header {
 .close-btn { background: transparent; border: 1px solid var(--border); color: var(--text); font-family: 'Barlow Condensed', sans-serif; font-size: 0.82rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; padding: 7px 16px; cursor: pointer; flex-shrink: 0; transition: all 0.15s; }
 .close-btn:hover { background: var(--red); border-color: var(--red); }
 #pages-wrap { flex: 1; overflow-y: auto; display: flex; flex-direction: column; align-items: center; gap: 32px; padding: 32px 0 60px; scrollbar-width: thin; scrollbar-color: var(--border) transparent; }
-.page-item { position: relative; width: 100%; max-width: 780px; }
-.page-item img { width: 100%; display: block; }
-.page-badge { position: absolute; top: 0; left: 0; background: #000; border: 1px solid #333; color: var(--accent); font-family: 'Bebas Neue', sans-serif; font-size: 0.85rem; letter-spacing: 0.06em; padding: 3px 8px; line-height: 1.4; z-index: 10; pointer-events: none; }
 
+.fav-heart {
+  position: relative; /* Чтобы тост отталкивался от сердечка */
+}
+
+.fav-heart .toast { 
+  position: absolute;
+  bottom: calc(100% + 6px); /* Вылетает строго НАД сердечком, ничего не перекрывая снизу */
+  
+  /* --- ВЫРАВНИВАНИЕ: НАД СЕРДЕЧКОМ С ОПОРОЙ НА ПРАВЫЙ КРАЙ --- */
+  right: 0; /* Правый край текста идеально встает над правым краем сердечка */
+  transform: translateY(4px); /* Легкий сдвиг вниз для анимации старта */
+  /* --------------------------------------------------------- */
+  
+  /* Полный ноль по оформлению — только голый текст */
+  background: none; 
+  border: none; 
+  padding: 0;
+  
+  /* Делаем сам текст полупрозрачным */
+  color: rgba(239, 239, 239, 0.6); 
+  
+  font-family: 'Barlow Condensed', sans-serif; 
+  font-size: 0.65rem; 
+  font-weight: 600; 
+  letter-spacing: 0.03em; 
+  text-transform: uppercase; 
+  white-space: nowrap; 
+  z-index: 99; 
+  
+  /* Эффект плавного взлета вверх */
+  opacity: 0; 
+  transition: opacity 0.2s ease, transform 0.2s ease; 
+  pointer-events: none; 
+}
+
+/* Анимация при активации тоста */
+.fav-heart .toast.show { 
+  opacity: 1; 
+  transform: translateY(0); /* Взлетает на законное место */
+}
 /* FAVOURITES OVERLAY */
 #fav-overlay { position: fixed; inset: 0; background: #050505; z-index: 500; display: none; flex-direction: column; }
 #fav-overlay.open { display: flex; }
@@ -183,5 +219,27 @@ header {
 .card-views svg { opacity: 0.6; }
 .reader-count { display: flex; align-items: center; gap: 6px; font-size: 0.72rem; color: var(--muted); letter-spacing: 0.06em; flex-shrink: 0; }
 .reader-count svg { opacity: 0.6; }
-.toast { position: fixed; bottom: 24px; right: 20px; background: #111; border: 1px solid var(--accent); color: var(--text); font-family: 'Barlow Condensed', sans-serif; font-size: 0.78rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; padding: 10px 16px; z-index: 9999; opacity: 0; transform: translateY(10px); transition: all 0.25s; pointer-events: none; }
-.toast.show { opacity: 1; transform: translateY(0); }
+.toast { 
+  position: absolute; 
+  bottom: calc(100% + 6px); 
+  right: 0; 
+  background: rgba(17, 17, 17, 0.65); 
+  border: 1px solid rgba(232, 255, 0, 0.4);
+  font-family: 'Barlow Condensed', sans-serif; 
+  font-size: 0.65rem; 
+  font-weight: 600; 
+  letter-spacing: 0.05em; 
+  text-transform: uppercase; 
+  padding: 4px 8px; 
+  z-index: 9999; 
+  white-space: nowrap; 
+  opacity: 0; 
+  transform: translateY(5px); 
+  transition: all 0.2s ease; 
+  pointer-events: none; 
+}
+
+.toast.show { 
+  opacity: 1; 
+  transform: translateY(0); 
+}

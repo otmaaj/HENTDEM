@@ -113,13 +113,26 @@ function setMsg(el, text, type) {
   el.className = 'dmsg ' + type;
 }
 
-function showToast(msg) {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2500);
-}
+function showToast(msg, targetBtn) {
+  // Удаляем старый тост из ЭТОЙ конкретной кнопки, если он еще не исчез
+  const oldToast = targetBtn.querySelector('.toast');
+  if (oldToast) oldToast.remove();
 
+  // Создаем плашку тоста прямо внутри кнопки сердечка
+  const t = document.createElement('div');
+  t.className = 'toast';
+  t.textContent = msg;
+  targetBtn.appendChild(t);
+
+  // Таймаут, чтобы браузер успел применить стили анимации
+  setTimeout(() => t.classList.add('show'), 10);
+  
+  // Плавно скрываем и полностью удаляем через 2 секунды
+  setTimeout(() => {
+    t.classList.remove('show');
+    setTimeout(() => t.remove(), 200); 
+  }, 2000);
+}
 async function toggleFav(e, mangaName) {
   e.stopPropagation();
   if (!currentUser) { alert('Войдите в аккаунт'); return; }
@@ -132,10 +145,11 @@ async function toggleFav(e, mangaName) {
     const r = await fetch(url, { method: 'POST' });
     if (!r.ok) { const d = await r.json(); alert(parseError(d)); return; }
     btn.classList.toggle('active');
-    showToast(isActive ? '✕ Удалено из избранного' : '♥ Добавлено в избранное');
+    
+    // Вот тут была загвоздка! Передаем и короткий текст, и саму кнопку (btn)
+    showToast(isActive ? '✕ Удалено' : '♥ Добавлено', btn);
   } catch(e) { alert('Ошибка сети'); }
 }
-
 async function openFav() {
   document.getElementById('profile-dropdown').classList.remove('open');
   const overlay = document.getElementById('fav-overlay');

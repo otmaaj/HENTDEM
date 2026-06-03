@@ -28,7 +28,7 @@ def manga_list(db: Session = Depends(get_db)):
     res = []
     for manga in mangas:
         photo = get_photo(manga.name)
-        res.append({"name": manga.name,"genre": manga.genre,"photo": photo})
+        res.append({"name": manga.name,"genre": manga.genre,"photo": photo,"views": manga.views})
     return {"manga": res}
 
 

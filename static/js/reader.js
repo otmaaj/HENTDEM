@@ -113,7 +113,13 @@ function setMsg(el, text, type) {
   el.className = 'dmsg ' + type;
 }
 
-// FAVOURITES
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
 async function toggleFav(e, mangaName) {
   e.stopPropagation();
   if (!currentUser) { alert('Войдите в аккаунт'); return; }
@@ -126,6 +132,7 @@ async function toggleFav(e, mangaName) {
     const r = await fetch(url, { method: 'POST' });
     if (!r.ok) { const d = await r.json(); alert(parseError(d)); return; }
     btn.classList.toggle('active');
+    showToast(isActive ? '✕ Удалено из избранного' : '♥ Добавлено в избранное');
   } catch(e) { alert('Ошибка сети'); }
 }
 
@@ -150,7 +157,6 @@ function closeFav() {
   document.getElementById('fav-overlay').classList.remove('open');
   document.body.style.overflow = '';
 }
-
 
 let searchTimer;
 document.getElementById('search').addEventListener('input', () => {
@@ -217,6 +223,8 @@ function render(list, filtered = false) {
   renderCards(list, el, false);
 }
 
+const eyeIcon = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`;
+
 function renderCards(list, el, isFav = false) {
   if (!list.length) { el.innerHTML = `<div class="empty">${isFav ? 'Избранное пусто' : 'Ничего не найдено'}</div>`; return; }
   el.innerHTML = '';
@@ -241,24 +249,22 @@ function renderCards(list, el, isFav = false) {
           <div class="card-name">${m.name}</div>
           <div class="card-genres">${genres.map(g=>`<span class="tag">${g}</span>`).join('')}</div>
         </div>
+        <div class="card-views">${eyeIcon} ${m.views ?? 0}</div>
         <div class="card-arrow">›</div>
-     ${currentUser && !isFav ? `<div class="fav-heart">♥</div>` : ''}${isFav ? '<div class="fav-delete">🗑</div>' : ''}
+        ${currentUser && !isFav ? `<div class="fav-heart">♥</div>` : ''}${isFav ? '<div class="fav-delete">🗑</div>' : ''}
       </div>`;
 
-    // вешаем обработчик через querySelector — не через onclick в html
     const heart = card.querySelector('.fav-heart');
-if (heart) {
-  heart.addEventListener('click', e => toggleFav(e, m.name));
-}
-const del = card.querySelector('.fav-delete');
-if (del) {
-  del.addEventListener('click', async e => {
-    e.stopPropagation();
-    const url = `/manga/fav_del?user_name=${encodeURIComponent(currentUser)}&manga_name=${encodeURIComponent(m.name)}`;
-    await fetch(url, { method: 'POST' });
-    card.remove();
-  });
-}
+    if (heart) heart.addEventListener('click', e => toggleFav(e, m.name));
+    const del = card.querySelector('.fav-delete');
+    if (del) {
+      del.addEventListener('click', async e => {
+        e.stopPropagation();
+        const url = `/manga/fav_del?user_name=${encodeURIComponent(currentUser)}&manga_name=${encodeURIComponent(m.name)}`;
+        await fetch(url, { method: 'POST' });
+        card.remove();
+      });
+    }
 
     if (isFav) {
       card.onclick = () => { closeFav(); openReader(m.name); };
@@ -283,7 +289,7 @@ async function openReader(name) {
     if (!r.ok) throw new Error(r.status);
     const data  = await r.json();
     const pages = data.pages || [];
-    document.getElementById('reader-count').textContent = `${pages.length} стр.`;
+    document.getElementById('reader-count').innerHTML = `${pages.length} стр. &nbsp;·&nbsp; ${eyeIcon} ${data.views ?? 0}`;
     wrap.innerHTML = '';
     pages.forEach((p, i) => {
       const item = document.createElement('div');

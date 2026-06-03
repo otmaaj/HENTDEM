@@ -18,11 +18,13 @@
     <div class="logo-text">HENT<span>DEM</span></div>
   </div>
 
-<div class="search-box">
-    <input type="text" id="search" placeholder="Поиск..." autocomplete="off" name="manga-search">
+  <input type="text" style="display:none" name="fake-user">
+  <input type="password" style="display:none" name="fake-pass">
+  <div class="search-box">
+    <input type="text" id="search" placeholder="Поиск..." autocomplete="new-password" name="manga-search">
     <div class="search-icon" onclick="doSearch()">⌕</div>
   </div>
-  
+
   <div class="profile-wrap">
     <button class="profile-btn" id="profile-btn" onclick="toggleDropdown()">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
@@ -57,9 +59,8 @@
           <div class="logged-username" id="logged-name"></div>
           <div class="logged-sub">вы вошли в аккаунт</div>
         </div>
-      <button class="dfav-btn" onclick="openFav()">♥ Избранное</button>
-<button class="dlogout" onclick="doLogout()">Выйти</button>
-        
+        <button class="dfav-btn" onclick="openFav()">♥ Избранное</button>
+        <button class="dlogout" onclick="doLogout()">Выйти</button>
       </div>
     </div>
   </div>
@@ -96,6 +97,7 @@
 </div>
 
 <button id="totop" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+<div class="toast" id="toast"></div>
 
 <script>
   document.addEventListener('DOMContentLoaded', () => {

@@ -79,7 +79,7 @@ async function doLogin() {
     localStorage.setItem('hd_user', name);
     updateProfileUI();
     document.getElementById('profile-dropdown').classList.remove('open');
-    render(allManga);
+    loadManga(); // Перезагружаем мангу после входа, чтобы подтянулось Избранное
   } catch(e) { setMsg(msg, 'Ошибка сети', 'err'); }
 }
 
@@ -114,25 +114,22 @@ function setMsg(el, text, type) {
 }
 
 function showToast(msg, targetBtn) {
-  // Удаляем старый тост из ЭТОЙ конкретной кнопки, если он еще не исчез
   const oldToast = targetBtn.querySelector('.toast');
   if (oldToast) oldToast.remove();
 
-  // Создаем плашку тоста прямо внутри кнопки сердечка
   const t = document.createElement('div');
   t.className = 'toast';
   t.textContent = msg;
   targetBtn.appendChild(t);
 
-  // Таймаут, чтобы браузер успел применить стили анимации
   setTimeout(() => t.classList.add('show'), 10);
   
-  // Плавно скрываем и полностью удаляем через 2 секунды
   setTimeout(() => {
     t.classList.remove('show');
     setTimeout(() => t.remove(), 200); 
   }, 2000);
 }
+
 async function toggleFav(e, mangaName) {
   e.stopPropagation();
   if (!currentUser) { alert('Войдите в аккаунт'); return; }
@@ -145,11 +142,10 @@ async function toggleFav(e, mangaName) {
     const r = await fetch(url, { method: 'POST' });
     if (!r.ok) { const d = await r.json(); alert(parseError(d)); return; }
     btn.classList.toggle('active');
-    
-    // Вот тут была загвоздка! Передаем и короткий текст, и саму кнопку (btn)
     showToast(isActive ? '✕ Удалено' : '♥ Добавлено', btn);
   } catch(e) { alert('Ошибка сети'); }
 }
+
 async function openFav() {
   document.getElementById('profile-dropdown').classList.remove('open');
   const overlay = document.getElementById('fav-overlay');
@@ -186,6 +182,15 @@ async function loadManga() {
     if (!r.ok) throw new Error(r.status);
     const data = await r.json();
     allManga = data.manga || [];
+    
+    // Чистим панель жанров перед пересборкой, чтобы кнопки не дублировались
+    const bar = document.getElementById('genre-bar');
+    if (bar) {
+      const allBtn = bar.querySelector('[data-genre="all"]');
+      bar.innerHTML = '';
+      if (allBtn) bar.appendChild(allBtn);
+    }
+    
     buildGenres(allManga);
     render(allManga);
   } catch(e) {
@@ -199,6 +204,8 @@ function buildGenres(list) {
   list.forEach(m => (m.genre || 'другое').split(',').forEach(g => set.add(g.trim())));
   const bar = document.getElementById('genre-bar');
   set.forEach(g => {
+    // Проверка, чтобы кнопка уже не существовала в DOM
+    if (bar.querySelector(`[data-genre="${g}"]`)) return;
     const btn = document.createElement('button');
     btn.className = 'genre-btn'; btn.textContent = g; btn.dataset.genre = g;
     btn.onclick = () => setGenre(btn, g);
@@ -212,11 +219,12 @@ function setGenre(btn, genre) {
     btn.classList.add('active');
     activeGenres = new Set();
   } else {
-    document.querySelector('[data-genre="all"]').classList.remove('active');
+    const allBtn = document.querySelector('[data-genre="all"]');
+    if (allBtn) allBtn.classList.remove('active');
     btn.classList.toggle('active');
     if (activeGenres.has(genre)) activeGenres.delete(genre);
     else activeGenres.add(genre);
-    if (activeGenres.size === 0) document.querySelector('[data-genre="all"]').classList.add('active');
+    if (activeGenres.size === 0 && allBtn) allBtn.classList.add('active');
   }
   doSearch();
 }
@@ -256,17 +264,18 @@ function renderCards(list, el, isFav = false) {
               onerror="this.parentElement.innerHTML='<div class=card-thumb-placeholder>${m.name.slice(0,2).toUpperCase()}</div>'">`
           : `<div class="card-thumb-placeholder">${m.name.slice(0,2).toUpperCase()}</div>`}
         <div class="read-badge">Читать</div>
-    ${(m.views ?? 0) > 100? '<div class="popular-badge">Популярно</div>' : ''}
+        ${(m.views ?? 0) > 100 ? '<div class="popular-badge">Популярно</div>' : ''}
       </div>
       <div class="card-info">
         <div class="card-num">${num}</div>
         <div class="card-meta">
           <div class="card-name">${m.name}</div>
-          <div class="card-genres">${genres.map(g=>`<span class="tag">${g}</span>`).join('')}</div>
+          <div class="card-genres">${genres.map(g => `<span class="tag">${g}</span>`).join('')}</div>
         </div>
         <div class="card-views">${eyeIcon} ${m.views ?? 0}</div>
         <div class="card-arrow">›</div>
-        ${currentUser && !isFav ? `<div class="fav-heart">♥</div>` : ''}${isFav ? '<div class="fav-delete">🗑</div>' : ''}
+        ${currentUser && !isFav ? `<div class="fav-heart">♥</div>` : ''}
+        ${isFav ? '<div class="fav-delete">🗑</div>' : ''}
       </div>`;
 
     const heart = card.querySelector('.fav-heart');
@@ -310,11 +319,8 @@ async function openReader(name) {
       const item = document.createElement('div');
       item.className = 'page-item';
       item.innerHTML = `
-  <div class="page-num">${String(i + 1).padStart(2, '0')}</div>
-  <img src="/media/${encodeURIComponent(name)}/${p}"
-        <img src="/media/${encodeURIComponent(name)}/${p}"
-             alt="стр. ${i+1}"
-             loading="${i < 2 ? 'eager' : 'lazy'}">`;
+        <div class="page-num">${String(i + 1).padStart(2, '0')}</div>
+        <img src="/media/${encodeURIComponent(name)}/${p}" alt="стр. ${i+1}" loading="${i < 2 ? 'eager' : 'lazy'}">`;
       wrap.appendChild(item);
     });
   } catch(e) {
@@ -332,3 +338,11 @@ function closeReader() {
 document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeReader(); closeFav(); } });
 
 loadManga();
+
+const genreBar = document.getElementById('genre-bar');
+if (genreBar) {
+  genreBar.addEventListener('wheel', (e) => {
+    e.preventDefault();
+    genreBar.scrollLeft += e.deltaY;
+  });
+}

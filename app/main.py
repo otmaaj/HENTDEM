@@ -1,36 +1,60 @@
 import json
+from contextlib import asynccontextmanager
+from pathlib import Path
+
+import anyio
 import starlette.middleware.cors
 from fastapi import FastAPI
-from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
-from pathlib import Path
+from fastapi.staticfiles import StaticFiles
 from sqlalchemy import select
-from sqlalchemy.orm import Session
+
 from app.routers.users import router as users_router
 from app.routers.handlers import router
 from app.models.models import Manga, Base, Favourites, Users
-from app.models.connection import engine
+from app.models.connection import engine, AsyncSessionLocal
 from app.services.services import MEDIA_DIR
 
 BASE_DIR = Path(__file__).parent.parent
 
-app = FastAPI()
 
-Base.metadata.create_all(bind=engine)
+def sync_folders():
+    folders_data = []
+    if not MEDIA_DIR.exists():
+        return folders_data
+    for f in MEDIA_DIR.iterdir():
+        if f.is_dir():
+            name = f.name
+            info_file = MEDIA_DIR / name / 'info.json'
+            genre = 'другое'
+            if info_file.exists():
+                try:
+                    genres = json.loads(info_file.read_text(encoding='utf-8')).get('genre', ['другое'])
+                    genre = ','.join(genres)
+                except Exception:
+                    pass
+            folders_data.append((name, genre))
+    return folders_data
 
-# синхронизируем папки с БД
-with Session(engine) as db:
-    folders = [f.name for f in MEDIA_DIR.iterdir() if f.is_dir()]
-    for name in folders:
-        info_file = MEDIA_DIR / name / 'info.json'
-        genre = 'другое'
-        if info_file.exists():
-            genres = json.loads(info_file.read_text(encoding='utf-8')).get('genre', ['другое'])
-            genre = ','.join(genres)
-        exists = db.execute(select(Manga).where(Manga.name == name)).scalar()
-        if not exists:
-            db.add(Manga(name=name, genre=genre))
-    db.commit()
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+
+    folders = await anyio.to_thread.run_sync(sync_folders)
+
+    async with AsyncSessionLocal() as db:
+        for name, genre in folders:
+            result = await db.execute(select(Manga).where(Manga.name == name))
+            exists = result.scalar()
+            if not exists:
+                db.add(Manga(name=name, genre=genre))
+        await db.commit()
+    yield
+
+
+app = FastAPI(lifespan=lifespan)
 
 app.add_middleware(
     starlette.middleware.cors.CORSMiddleware,
@@ -44,10 +68,13 @@ app.include_router(router)
 app.include_router(users_router)
 app.mount("/media", StaticFiles(directory=MEDIA_DIR), name="media")
 app.mount("/static", StaticFiles(directory=BASE_DIR / "static"), name="static")
+
+
 @app.get("/")
-def index():
+async def index():
     return FileResponse(BASE_DIR / "static" / "index.html")
 
+
 @app.get("/read/{manga}")
-def read_page(manga: str):
+async def read_page(manga: str):
     return FileResponse(BASE_DIR / "static" / "index.html")

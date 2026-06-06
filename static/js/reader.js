@@ -256,6 +256,7 @@ function renderCards(list, el, isFav = false) {
               onerror="this.parentElement.innerHTML='<div class=card-thumb-placeholder>${m.name.slice(0,2).toUpperCase()}</div>'">`
           : `<div class="card-thumb-placeholder">${m.name.slice(0,2).toUpperCase()}</div>`}
         <div class="read-badge">Читать</div>
+    ${(m.views ?? 0) > 100? '<div class="popular-badge">Популярно</div>' : ''}
       </div>
       <div class="card-info">
         <div class="card-num">${num}</div>
@@ -309,7 +310,8 @@ async function openReader(name) {
       const item = document.createElement('div');
       item.className = 'page-item';
       item.innerHTML = `
-        <div class="page-badge">${i + 1}</div>
+  <div class="page-num">${String(i + 1).padStart(2, '0')}</div>
+  <img src="/media/${encodeURIComponent(name)}/${p}"
         <img src="/media/${encodeURIComponent(name)}/${p}"
              alt="стр. ${i+1}"
              loading="${i < 2 ? 'eager' : 'lazy'}">`;

@@ -196,8 +196,8 @@ header {
   .search-box { max-width: none; flex: 1; }
   .fav-top-btn { display: none; }
   .profile-dropdown { width: 220px; }
-  .genre-bar { padding: 0 8px; }
-  .genre-btn { padding: 10px 10px; font-size: 0.72rem; }
+ .genre-bar { background: #111; border-bottom: 1px solid var(--border); display: flex; align-items: center; flex-wrap: wrap; padding: 4px 8px; }
+ .genre-btn { padding: 8px 10px; font-size: 0.72rem; width: 50%; text-align: left; }
   .container { max-width: 100%; padding: 8px 0 60px; }
   .card-info { padding: 8px 10px 10px; gap: 8px; }
   .card-name { font-size: 0.9rem; }
@@ -243,3 +243,8 @@ header {
   opacity: 1; 
   transform: translateY(0); 
 }
+
+.page-item { position: relative; width: 100%; max-width: 780px; }
+.page-item img { width: 100%; display: block; }
+.page-num { font-family: 'Bebas Neue', sans-serif; font-size: 1.6rem; color: var(--sub); line-height: 1; padding: 8px 0 4px; }
+.popular-badge { position: absolute; top: 12px; left: 12px; background: var(--red); color: #fff; font-family: 'Barlow Condensed', sans-serif; font-size: 0.68rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; padding: 3px 10px; z-index: 2; }

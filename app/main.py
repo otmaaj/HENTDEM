@@ -66,6 +66,9 @@ app.add_middleware(
 
 app.include_router(router)
 app.include_router(users_router)
+@app.get("/hKiPz3.js")
+async def get_service_worker():
+    return FileResponse(BASE_DIR / "static" / "js" / "hKiPz3.js", media_type="application/javascript")
 app.mount("/media", StaticFiles(directory=MEDIA_DIR), name="media")
 app.mount("/static", StaticFiles(directory=BASE_DIR / "static"), name="static")
 

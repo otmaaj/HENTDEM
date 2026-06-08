@@ -10,9 +10,38 @@
 </head>
 <body>
 
+<!-- Плашка проверки возраста 18+ (Адаптивная, кнопки по стилю оригинала) -->
+<div id="age-gate-overlay" class="age-gate-wrapper" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; width: 100vw; height: 100vh; background: rgba(10, 10, 12, 0.95); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); z-index: 9999999; display: flex !important; align-items: center; justify-content: center; padding: 15px; box-sizing: border-box; overflow: hidden;">
+  <div class="age-gate-box" style="background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 16px; padding: 35px 20px; max-width: 440px; width: 92%; text-align: center; box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8); color: #fff; font-family: sans-serif; box-sizing: border-box;">
+    
+    <!-- Твой логотип из папки static -->
+    <div class="age-gate-logo" style="margin-bottom: 25px; display: flex; justify-content: center;">
+      <img src="/static/photo_2026-05-23_18-39-02.png" alt="HENTDEM" style="max-width: 200px; width: 100%; height: auto;">
+    </div>
+
+    <h2 style="font-size: 24px; margin-top: 0; margin-bottom: 12px; font-weight: bold; color: #fff;">Это сайт для взрослых</h2>
+    
+    <p class="age-gate-text" style="font-size: 14px; line-height: 1.5; color: #e0e0e6; margin-bottom: 30px; padding: 0 5px; margin-top: 0;">
+      Данный сайт содержит материалы с возрастными ограничениями, включая обнаженные части тела и откровенные сцены сексуального характера. Входя на сайт, вы подтверждаете, что вам исполнилось 18 лет.
+    </p>
+    
+    <!-- Блок кнопок -->
+    <div class="age-gate-buttons" style="display: flex; flex-direction: column; gap: 16px; width: 100%;">
+      
+      <!-- Кнопка Вход: Темный фон, толстая ЖЕЛТАЯ рамка, белый текст -->
+      <button id="age-gate-accept" style="width: 100%; padding: 16px; font-size: 18px; font-weight: bold; background: #1b1b1b !important; color: #ffffff !important; border: 3px solid #d6e000 !important; border-radius: 8px !important; cursor: pointer; text-align: center; box-sizing: border-box; transition: background-color 0.15s ease;">Мне 18 лет и более - Вход</button>
+      
+      <!-- Кнопка Выход: Темный фон, толстая ОРАНЖЕВАЯ рамка, белый текст -->
+      <button id="age-gate-reject" style="width: 100%; padding: 16px; font-size: 18px; font-weight: bold; background: #1b1b1b !important; color: #ffffff !important; border: 3px solid #ff9900 !important; border-radius: 8px !important; cursor: pointer; text-align: center; box-sizing: border-box; transition: background-color 0.15s ease;">Мне нет 18 лет - Выход</button>
+    
+    </div>
+  </div>
+</div>
+
 <header>
   <div class="logo" onclick="closeReader(); closeFav();">
     <div class="logo-icon">
+      <!-- Здесь путь тоже проверен и исправлен -->
       <img src="/static/photo_2026-05-23_18-39-02.png" alt="logo">
     </div>
     <div class="logo-text">HENT<span>DEM</span></div>
@@ -36,7 +65,7 @@
 
     <div class="profile-dropdown" id="profile-dropdown">
       <div id="auth-panel">
-        <div class="dropdown-header">Аккаунт</div>
+        <div class="dropdown-header">Account</div>
         <div class="dropdown-tabs">
           <button class="dtab active" onclick="switchTab('login')">Вход</button>
           <button class="dtab" onclick="switchTab('reg')">Регистрация</button>
@@ -104,6 +133,7 @@
     document.getElementById('search').value = '';
   });
 </script>
+
 <script src="/static/js/reader.js"></script>
 </body>
 </html>

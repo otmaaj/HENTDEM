@@ -241,3 +241,40 @@ header {
   .page-item { max-width: 100%; }
   #totop { bottom: 16px; right: 12px; width: 34px; height: 34px; font-size: 0.85rem; }
 }
+#pagination { display: flex; justify-content: center; gap: 8px; padding: 24px 0; flex-wrap: wrap; }
+.page-btn { background: transparent; border: 1px solid var(--border); color: var(--muted); font-family: 'Bebas Neue', sans-serif; font-size: 1.2rem; width: 40px; height: 40px; cursor: pointer; transition: all 0.15s; }
+.page-btn:hover { border-color: var(--accent); color: var(--accent); }
+.page-btn.active { border-color: var(--accent); color: var(--accent); background: rgba(232,255,0,0.08); }
+.card-like { display: flex; align-items: center; gap: 4px; font-size: 0.72rem; color: var(--muted); cursor: pointer; flex-shrink: 0; transition: color 0.15s; }
+.card-like:hover { color: var(--accent); }
+.card-like.active { color: var(--accent); }
+
+/* Полная копия кнопок с оригинального фото */
+.age-gate-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 16px; /* Расстояние между кнопками */
+  margin-top: 30px;
+  width: 100%;
+}
+
+.age-gate-buttons button {
+  width: 100%;
+  padding: 18px 16px; /* Массивные, крупные кнопки */
+  font-size: 18px;
+  font-weight: bold;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background-color: #1b1b1b !important; /* Точный темный цвет внутри кнопки */
+  color: #ffffff !important; /* Белый текст */
+  border: 3px solid #ff9900 !important; /* Фирменная оранжевая рамка по контуру */
+  border-radius: 8px !important; /* Скругление углов */
+  cursor: pointer;
+  text-align: center;
+  box-sizing: border-box;
+  transition: background-color 0.15s ease;
+}
+
+/* Эффект при наведении курсора */
+.age-gate-buttons button:hover {
+  background-color: #262626 !important; /* Чуть светлее при наведении */
+}

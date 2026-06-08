@@ -31,3 +31,14 @@ class Favourites(Base):
     user_id : Mapped[int] = mapped_column(ForeignKey('users.id'))
 
     __table_args__ = (UniqueConstraint('manga_id','user_id'), )
+
+
+class Likes(Base):
+    __tablename__ = "likes"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    manga_id: Mapped[int] = mapped_column(ForeignKey('manga.id'))
+    user_id: Mapped[int] = mapped_column(ForeignKey('users.id'))
+
+    __table_args__ = (UniqueConstraint('manga_id', 'user_id'), )
+    __table_args__ = (UniqueConstraint('manga_id','user_id'), )

@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, Depends, Query
 from app.services.services import get_manga_list, get_pages, get_photo, get_genre_list
 from app.models.connection import get_db
-from app.models.models import Manga, Favourites, Users
+from app.models.models import Manga, Favourites, Users, Likes
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -9,15 +9,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 router = APIRouter(prefix="/manga")
 
 @router.get('/search')
-async def check(q: str = None, genre : list[str] = Query(default=[])):
+async def check(q: str = None, genre: list[str] = Query(default=[])):
     manga = get_manga_list()
     if q:
         manga = [f for f in manga if q.lower() in f.lower()]
     if genre:
-        manga = [
-            m for m in manga
-            if all(tag in get_genre_list(m) for tag in genre)
-        ]
+        manga = [m for m in manga if all(tag in get_genre_list(m) for tag in genre)]
     return {'manga': manga}
 
 
@@ -30,12 +27,13 @@ async def manga_list(db: AsyncSession = Depends(get_db)):
     res = []
     for manga in mangas:
         photo = get_photo(manga.name)
-        res.append({"name": manga.name,"genre": manga.genre,"photo": photo,"views": manga.views})
+        result_likes = await db.execute(select(Likes).where(Likes.manga_id == manga.id))
+        likes_count = len(result_likes.scalars().all())
+        res.append({"name": manga.name, "genre": manga.genre, "photo": photo, "views": manga.views, "likes": likes_count})
     return {"manga": res}
 
-
 @router.post('/add')
-async def add(manga_name: str, user_name: str, db : AsyncSession = Depends(get_db)):
+async def add(manga_name: str, user_name: str, db: AsyncSession = Depends(get_db)):
     result_manga = await db.execute(select(Manga).where(Manga.name == manga_name))
     manga = result_manga.scalar()
     if not manga:
@@ -54,7 +52,7 @@ async def add(manga_name: str, user_name: str, db : AsyncSession = Depends(get_d
 
 
 @router.get('/fav_list')
-async def get_favourite_list(user_name : str, db : AsyncSession = Depends(get_db)):
+async def get_favourite_list(user_name: str, db: AsyncSession = Depends(get_db)):
     result_user = await db.execute(select(Users).where(Users.user_name == user_name))
     user = result_user.scalar()
     if not user:
@@ -74,7 +72,7 @@ async def get_favourite_list(user_name : str, db : AsyncSession = Depends(get_db
 
 
 @router.post('/fav_del')
-async def delete_favourite(user_name : str, manga_name: str, db : AsyncSession = Depends(get_db)):
+async def delete_favourite(user_name: str, manga_name: str, db: AsyncSession = Depends(get_db)):
     result_user = await db.execute(select(Users).where(Users.user_name == user_name))
     user = result_user.scalar()
     if not user:
@@ -92,6 +90,48 @@ async def delete_favourite(user_name : str, manga_name: str, db : AsyncSession =
     await db.delete(fav)
     await db.commit()
     return {'message': 'удалено из избранного'}
+
+
+@router.post('/like')
+async def like_manga(manga_name: str, user_name: str, db: AsyncSession = Depends(get_db)):
+    result_manga = await db.execute(select(Manga).where(Manga.name == manga_name))
+    manga = result_manga.scalar()
+    if not manga:
+        raise HTTPException(status_code=404, detail='манга не найдена')
+    result_user = await db.execute(select(Users).where(Users.user_name == user_name))
+    user = result_user.scalar()
+    if not user:
+        raise HTTPException(status_code=404, detail='войдите в аккаунт')
+    try:
+        db.add(Likes(manga_id=manga.id, user_id=user.id))
+        await db.commit()
+    except IntegrityError:
+        await db.rollback()
+        raise HTTPException(status_code=400, detail='уже лайкнуто')
+    result = await db.execute(select(Likes).where(Likes.manga_id == manga.id))
+    count = len(result.scalars().all())
+    return {'likes': count}
+
+
+@router.post('/like_del')
+async def unlike_manga(manga_name: str, user_name: str, db: AsyncSession = Depends(get_db)):
+    result_user = await db.execute(select(Users).where(Users.user_name == user_name))
+    user = result_user.scalar()
+    if not user:
+        raise HTTPException(status_code=404, detail='войдите в аккаунт')
+    result_manga = await db.execute(select(Manga).where(Manga.name == manga_name))
+    manga = result_manga.scalar()
+    if not manga:
+        raise HTTPException(status_code=404, detail='манга не найдена')
+    result_like = await db.execute(select(Likes).where(Likes.user_id == user.id, Likes.manga_id == manga.id))
+    like = result_like.scalar()
+    if not like:
+        raise HTTPException(status_code=404, detail='лайк не найден')
+    await db.delete(like)
+    await db.commit()
+    result = await db.execute(select(Likes).where(Likes.manga_id == manga.id))
+    count = len(result.scalars().all())
+    return {'likes': count}
 
 
 @router.get('/{manga}')

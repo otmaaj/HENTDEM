@@ -2,6 +2,10 @@ let allManga = [];
 let activeGenres = new Set();
 let currentUser = localStorage.getItem('hd_user') || null;
 
+// Иконки для интерфейса
+const eyeIcon = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`;
+const thumbIcon = `<svg viewBox="0 0 24 24" width="16" height="16" style="fill: currentColor; vertical-align: middle; margin-right: 4px;"><path d="M1 21h4V9H1v12zm22-11c0-1.1-.9-2-2-2h-6.31l.95-4.57.03-.32c0-.41-.17-.79-.44-1.06L14.17 1 7.59 7.59C7.22 7.95 7 8.45 7 9v10c0 1.1.9 2 2 2h9c.75 0 1.41-.41 1.75-1.03l3.58-8.35c.09-.23.15-.48.15-.75v-2z"/></svg> `;
+
 updateProfileUI();
 
 window.addEventListener('load', () => {
@@ -79,7 +83,7 @@ async function doLogin() {
     localStorage.setItem('hd_user', name);
     updateProfileUI();
     document.getElementById('profile-dropdown').classList.remove('open');
-    loadManga(); // Перезагружаем мангу после входа, чтобы подтянулось Избранное
+    loadManga();
   } catch(e) { setMsg(msg, 'Ошибка сети', 'err'); }
 }
 
@@ -116,17 +120,14 @@ function setMsg(el, text, type) {
 function showToast(msg, targetBtn) {
   const oldToast = targetBtn.querySelector('.toast');
   if (oldToast) oldToast.remove();
-
   const t = document.createElement('div');
   t.className = 'toast';
   t.textContent = msg;
   targetBtn.appendChild(t);
-
   setTimeout(() => t.classList.add('show'), 10);
-  
   setTimeout(() => {
     t.classList.remove('show');
-    setTimeout(() => t.remove(), 200); 
+    setTimeout(() => t.remove(), 200);
   }, 2000);
 }
 
@@ -182,15 +183,12 @@ async function loadManga() {
     if (!r.ok) throw new Error(r.status);
     const data = await r.json();
     allManga = data.manga || [];
-    
-    // Чистим панель жанров перед пересборкой, чтобы кнопки не дублировались
     const bar = document.getElementById('genre-bar');
     if (bar) {
       const allBtn = bar.querySelector('[data-genre="all"]');
       bar.innerHTML = '';
       if (allBtn) bar.appendChild(allBtn);
     }
-    
     buildGenres(allManga);
     render(allManga);
   } catch(e) {
@@ -204,7 +202,6 @@ function buildGenres(list) {
   list.forEach(m => (m.genre || 'другое').split(',').forEach(g => set.add(g.trim())));
   const bar = document.getElementById('genre-bar');
   set.forEach(g => {
-    // Проверка, чтобы кнопка уже не существовала в DOM
     if (bar.querySelector(`[data-genre="${g}"]`)) return;
     const btn = document.createElement('button');
     btn.className = 'genre-btn'; btn.textContent = g; btn.dataset.genre = g;
@@ -239,13 +236,48 @@ function doSearch() {
   render(list, q || activeGenres.size > 0);
 }
 
+let currentPage = 1;
+const PAGE_SIZE = 15;
+
 function render(list, filtered = false) {
-  const el = document.getElementById('card-list');
-  document.getElementById('results-info').textContent = filtered ? `Найдено: ${list.length}` : '';
-  renderCards(list, el, false);
+  currentPage = 1;
+  renderPage(list, filtered);
 }
 
-const eyeIcon = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`;
+function renderPage(list, filtered = false) {
+  const el = document.getElementById('card-list');
+  const total = list.length;
+  const totalPages = Math.ceil(total / PAGE_SIZE);
+  const start = (currentPage - 1) * PAGE_SIZE;
+  const pageItems = list.slice(start, start + PAGE_SIZE);
+
+  document.getElementById('results-info').textContent = filtered ? `Найдено: ${total}` : '';
+  renderCards(pageItems, el, false);
+
+  let pag = document.getElementById('pagination');
+  if (!pag) {
+    pag = document.createElement('div');
+    pag.id = 'pagination';
+    document.querySelector('.container').appendChild(pag);
+  }
+  if (totalPages <= 1) { pag.innerHTML = ''; return; }
+
+  let html = '';
+  for (let i = 1; i <= totalPages; i++) {
+    html += `<button class="page-btn ${i === currentPage ? 'active' : ''}" onclick="goPage(${i}, event)">${i}</button>`;
+  }
+  pag.innerHTML = html;
+  pag._list = list;
+  pag._filtered = filtered;
+}
+
+function goPage(n, e) {
+  e.stopPropagation();
+  const pag = document.getElementById('pagination');
+  currentPage = n;
+  renderPage(pag._list, pag._filtered);
+  window.scrollTo({top: 0, behavior: 'smooth'});
+}
 
 function renderCards(list, el, isFav = false) {
   if (!list.length) { el.innerHTML = `<div class="empty">${isFav ? 'Избранное пусто' : 'Ничего не найдено'}</div>`; return; }
@@ -272,6 +304,7 @@ function renderCards(list, el, isFav = false) {
           <div class="card-name">${m.name}</div>
           <div class="card-genres">${genres.map(g => `<span class="tag">${g}</span>`).join('')}</div>
         </div>
+        <div class="card-like" data-name="${m.name}">${thumbIcon}${m.likes ?? 0}</div>
         <div class="card-views">${eyeIcon} ${m.views ?? 0}</div>
         <div class="card-arrow">›</div>
         ${currentUser && !isFav ? `<div class="fav-heart">♥</div>` : ''}
@@ -280,6 +313,7 @@ function renderCards(list, el, isFav = false) {
 
     const heart = card.querySelector('.fav-heart');
     if (heart) heart.addEventListener('click', e => toggleFav(e, m.name));
+
     const del = card.querySelector('.fav-delete');
     if (del) {
       del.addEventListener('click', async e => {
@@ -287,6 +321,29 @@ function renderCards(list, el, isFav = false) {
         const url = `/manga/fav_del?user_name=${encodeURIComponent(currentUser)}&manga_name=${encodeURIComponent(m.name)}`;
         await fetch(url, { method: 'POST' });
         card.remove();
+      });
+    }
+
+    const like = card.querySelector('.card-like');
+    if (like) {
+      like.addEventListener('click', async e => {
+        e.stopPropagation();
+        if (!currentUser) { alert('Войдите в аккаунт'); return; }
+        const isActive = like.classList.contains('active');
+        const url = isActive
+          ? `/manga/like_del?user_name=${encodeURIComponent(currentUser)}&manga_name=${encodeURIComponent(m.name)}`
+          : `/manga/like?user_name=${encodeURIComponent(currentUser)}&manga_name=${encodeURIComponent(m.name)}`;
+        
+        try {
+          const r = await fetch(url, { method: 'POST' });
+          const data = await r.json();
+          if (r.ok) {
+            like.classList.toggle('active');
+            like.innerHTML = `${thumbIcon}${data.likes}`;
+          }
+        } catch (err) {
+          console.error("Ошибка при обработке лайка:", err);
+        }
       });
     }
 
@@ -346,3 +403,41 @@ if (genreBar) {
     genreBar.scrollLeft += e.deltaY;
   });
 }
+// Логика окна 18+
+(function() {
+  function initAgeGate() {
+    const ageGate = document.getElementById('age-gate-overlay');
+    const acceptBtn = document.getElementById('age-gate-accept');
+    const rejectBtn = document.getElementById('age-gate-reject');
+
+    if (!ageGate) return;
+
+    // ЕСЛИ УЖЕ ПРОВЕРЯЛИ — скрываем плашку принудительно
+    if (localStorage.getItem('age_verified') === 'true') {
+      ageGate.style.setProperty('display', 'none', 'important');
+    } else {
+      // Иначе держим заблокированным скролл
+      document.body.style.overflow = 'hidden';
+    }
+
+    // Клик на Вход
+    if (acceptBtn) {
+      acceptBtn.onclick = function() {
+        localStorage.setItem('age_verified', 'true');
+        ageGate.style.setProperty('display', 'none', 'important');
+        document.body.style.overflow = '';
+      };
+    }
+
+    // Клик на Выход
+    if (rejectBtn) {
+      rejectBtn.onclick = function() {
+        window.location.href = 'https://www.google.com';
+      };
+    }
+  }
+
+  // Запускаем сразу же и на всякий случай дублируем при полной загрузке DOM
+  initAgeGate();
+  document.addEventListener('DOMContentLoaded', initAgeGate);
+})();

@@ -304,7 +304,7 @@ function renderCards(list, el, isFav = false) {
           <div class="card-name">${m.name}</div>
           <div class="card-genres">${genres.map(g => `<span class="tag">${g}</span>`).join('')}</div>
         </div>
-        <div class="card-like" data-name="${m.name}">${thumbIcon}${m.likes ?? 0}</div>
+        <div class="card-like card-like--readonly" data-name="${m.name}" data-likes="${m.likes ?? 0}">${thumbIcon}${m.likes ?? 0}</div>
         <div class="card-views">${eyeIcon} ${m.views ?? 0}</div>
         <div class="card-arrow">›</div>
         ${currentUser && !isFav ? `<div class="fav-heart">♥</div>` : ''}
@@ -324,26 +324,12 @@ function renderCards(list, el, isFav = false) {
       });
     }
 
-    const like = card.querySelector('.card-like');
+    // Лайк на главной — только визуал, клик заблокирован
+    const like = card.querySelector('.card-like--readonly');
     if (like) {
-      like.addEventListener('click', async e => {
+      like.addEventListener('click', e => {
         e.stopPropagation();
-        if (!currentUser) { alert('Войдите в аккаунт'); return; }
-        const isActive = like.classList.contains('active');
-        const url = isActive
-          ? `/manga/like_del?user_name=${encodeURIComponent(currentUser)}&manga_name=${encodeURIComponent(m.name)}`
-          : `/manga/like?user_name=${encodeURIComponent(currentUser)}&manga_name=${encodeURIComponent(m.name)}`;
-        
-        try {
-          const r = await fetch(url, { method: 'POST' });
-          const data = await r.json();
-          if (r.ok) {
-            like.classList.toggle('active');
-            like.innerHTML = `${thumbIcon}${data.likes}`;
-          }
-        } catch (err) {
-          console.error("Ошибка при обработке лайка:", err);
-        }
+        // ничего не делаем
       });
     }
 
@@ -356,22 +342,112 @@ function renderCards(list, el, isFav = false) {
   });
 }
 
+// ===================== READER =====================
+
+// Скрытие хедера при скролле вниз, появление при скролле вверх
+let readerLastScrollY = 0;
+let readerHeaderVisible = true;
+let readerScrollListener = null;
+
+function setupReaderScrollBehavior() {
+  const wrap = document.getElementById('pages-wrap');
+  const header = document.getElementById('reader-header');
+  if (!wrap || !header) return;
+
+  // Удаляем старый листенер если есть
+  if (readerScrollListener) {
+    wrap.removeEventListener('scroll', readerScrollListener);
+  }
+
+  readerLastScrollY = 0;
+  readerHeaderVisible = true;
+  header.classList.remove('reader-header--hidden');
+
+  readerScrollListener = () => {
+    const currentY = wrap.scrollTop;
+    const diff = currentY - readerLastScrollY;
+
+    if (diff > 8 && readerHeaderVisible) {
+      readerHeaderVisible = false;
+      header.classList.add('reader-header--hidden');
+    } else if (diff < -8 && !readerHeaderVisible) {
+      readerHeaderVisible = true;
+      header.classList.remove('reader-header--hidden');
+    }
+    readerLastScrollY = currentY;
+  };
+
+  wrap.addEventListener('scroll', readerScrollListener, { passive: true });
+}
+
+async function toggleLikeInReader(mangaName) {
+  if (!currentUser) { alert('Войдите в аккаунт'); return; }
+  // Синхронизируем все кнопки лайка (в хедере + снизу)
+  const btns = document.querySelectorAll('.reader-like-btn');
+  const isActive = btns[0]?.classList.contains('active');
+  const url = isActive
+    ? `/manga/like_del?user_name=${encodeURIComponent(currentUser)}&manga_name=${encodeURIComponent(mangaName)}`
+    : `/manga/like?user_name=${encodeURIComponent(currentUser)}&manga_name=${encodeURIComponent(mangaName)}`;
+  try {
+    const r = await fetch(url, { method: 'POST' });
+    const data = await r.json();
+    if (r.ok) {
+      btns.forEach(btn => {
+        btn.classList.toggle('active');
+        btn.querySelector('.reader-like-count').textContent = data.likes;
+      });
+    }
+  } catch (err) {
+    console.error('Ошибка лайка:', err);
+  }
+}
+
+function buildReaderLikeBtn(mangaName, likesCount) {
+  const btn = document.createElement('button');
+  btn.className = 'reader-like-btn';
+  btn.innerHTML = `${thumbIcon}<span class="reader-like-count">${likesCount}</span>`;
+  btn.addEventListener('click', e => {
+    e.stopPropagation();
+    toggleLikeInReader(mangaName);
+  });
+  return btn;
+}
+
 async function openReader(name) {
   history.pushState({ manga: name }, '', `/read/${encodeURIComponent(name)}`);
   const reader = document.getElementById('reader');
   const wrap   = document.getElementById('pages-wrap');
+
+  // Убираем старую кнопку лайка из хедера если есть
+  const oldLikeBtn = document.getElementById('reader-header-like');
+  if (oldLikeBtn) oldLikeBtn.remove();
+
   document.getElementById('reader-title').textContent = name;
   document.getElementById('reader-count').textContent = '';
   wrap.innerHTML = `<div class="loader"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>`;
   reader.classList.add('open');
   document.body.style.overflow = 'hidden';
+
+  wrap.scrollTop = 0;
+  setupReaderScrollBehavior();
+
   try {
     const r = await fetch(`/manga/${encodeURIComponent(name)}`);
     if (!r.ok) throw new Error(r.status);
     const data  = await r.json();
     const pages = data.pages || [];
+    const likesCount = data.likes ?? 0;
+
     document.getElementById('reader-count').innerHTML = `${pages.length} стр. &nbsp;·&nbsp; ${eyeIcon} ${data.views ?? 0}`;
+
+    // Кнопка лайка в хедере (рядом с "Закрыть")
+    const headerLikeBtn = buildReaderLikeBtn(name, likesCount);
+    headerLikeBtn.id = 'reader-header-like';
+    const closeBtn = document.querySelector('#reader .close-btn');
+    if (closeBtn) closeBtn.parentNode.insertBefore(headerLikeBtn, closeBtn);
+
     wrap.innerHTML = '';
+
     pages.forEach((p, i) => {
       const item = document.createElement('div');
       item.className = 'page-item';
@@ -380,6 +456,13 @@ async function openReader(name) {
         <img src="/media/${encodeURIComponent(name)}/${p}" alt="стр. ${i+1}" loading="${i < 2 ? 'eager' : 'lazy'}">`;
       wrap.appendChild(item);
     });
+
+    // Кнопка лайка СНИЗУ страниц
+    const likeBottom = document.createElement('div');
+    likeBottom.className = 'reader-like-wrap--bottom';
+    likeBottom.appendChild(buildReaderLikeBtn(name, likesCount));
+    wrap.appendChild(likeBottom);
+
   } catch(e) {
     wrap.innerHTML = `<div class="empty">Ошибка: ${e.message}</div>`;
   }
@@ -390,6 +473,12 @@ function closeReader() {
   document.getElementById('reader').classList.remove('open');
   document.getElementById('pages-wrap').innerHTML = '';
   document.body.style.overflow = '';
+  // Сброс хедера
+  const header = document.getElementById('reader-header');
+  if (header) header.classList.remove('reader-header--hidden');
+  // Убрать кнопку лайка из хедера
+  const likeBtn = document.getElementById('reader-header-like');
+  if (likeBtn) likeBtn.remove();
 }
 
 document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeReader(); closeFav(); } });
@@ -403,6 +492,7 @@ if (genreBar) {
     genreBar.scrollLeft += e.deltaY;
   });
 }
+
 // Логика окна 18+
 (function() {
   function initAgeGate() {
@@ -412,15 +502,12 @@ if (genreBar) {
 
     if (!ageGate) return;
 
-    // ЕСЛИ УЖЕ ПРОВЕРЯЛИ — скрываем плашку принудительно
     if (localStorage.getItem('age_verified') === 'true') {
       ageGate.style.setProperty('display', 'none', 'important');
     } else {
-      // Иначе держим заблокированным скролл
       document.body.style.overflow = 'hidden';
     }
 
-    // Клик на Вход
     if (acceptBtn) {
       acceptBtn.onclick = function() {
         localStorage.setItem('age_verified', 'true');
@@ -429,7 +516,6 @@ if (genreBar) {
       };
     }
 
-    // Клик на Выход
     if (rejectBtn) {
       rejectBtn.onclick = function() {
         window.location.href = 'https://www.google.com';
@@ -437,7 +523,6 @@ if (genreBar) {
     }
   }
 
-  // Запускаем сразу же и на всякий случай дублируем при полной загрузке DOM
   initAgeGate();
   document.addEventListener('DOMContentLoaded', initAgeGate);
 })();

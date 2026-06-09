@@ -278,3 +278,231 @@ header {
 .age-gate-buttons button:hover {
   background-color: #262626 !important; /* Чуть светлее при наведении */
 }
+/* ===== ДОБАВИТЬ В КОНЕЦ style.css ===== */
+
+/* Ридер — хедер поверх контента, pages-wrap на весь экран */
+#reader {
+  position: fixed;
+  inset: 0;
+}
+
+.reader-header {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 10;
+  transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+.reader-header--hidden {
+  transform: translateY(-100%);
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* pages-wrap занимает весь экран — хедер плавает поверх */
+#pages-wrap {
+  position: absolute;
+  inset: 0;
+  /* убираем flex из основного стиля — перекрываем здесь */
+  padding-top: 32px !important;
+}
+
+/* Лайк на главной — только отображение, без интерактива */
+.card-like--readonly {
+  cursor: default !important;
+  pointer-events: none;
+  color: var(--muted) !important;
+}
+.card-like--readonly:hover {
+  color: var(--muted) !important;
+}
+
+/* Кнопка лайка в хедере ридера */
+#reader-header-like {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--muted);
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 7px 14px;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all 0.2s;
+}
+#reader-header-like:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+#reader-header-like.active {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: rgba(232, 255, 0, 0.07);
+}
+
+/* Кнопка лайка снизу страниц */
+.reader-like-wrap--bottom {
+  display: flex;
+  justify-content: center;
+  padding: 24px 0 16px;
+  width: 100%;
+}
+
+.reader-like-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--muted);
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 10px 24px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.reader-like-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.reader-like-btn.active {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: rgba(232, 255, 0, 0.07);
+}
+/* ===== ДОБАВИТЬ В КОНЕЦ style.css ===== */
+
+/* Ридер — хедер поверх контента, pages-wrap на весь экран */
+#reader {
+  position: fixed;
+  inset: 0;
+}
+
+.reader-header {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 10;
+  transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+.reader-header--hidden {
+  transform: translateY(-100%);
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* pages-wrap занимает весь экран — хедер плавает поверх */
+#pages-wrap {
+  position: absolute;
+  inset: 0;
+  /* убираем flex из основного стиля — перекрываем здесь */
+  padding-top: 32px !important;
+}
+
+/* Лайк на главной — только отображение, без интерактива */
+.card-like--readonly {
+  cursor: default !important;
+  pointer-events: none;
+  color: var(--muted) !important;
+}
+.card-like--readonly:hover {
+  color: var(--muted) !important;
+}
+
+/* Кнопка лайка в хедере ридера */
+#reader-header-like {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--muted);
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 7px 14px;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all 0.2s;
+}
+#reader-header-like:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+#reader-header-like.active {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: rgba(232, 255, 0, 0.07);
+}
+
+/* Кнопка лайка снизу страниц */
+.reader-like-wrap--bottom {
+  display: flex;
+  justify-content: center;
+  padding: 24px 0 16px;
+  width: 100%;
+}
+
+.reader-like-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--muted);
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 10px 24px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.reader-like-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.reader-like-btn.active {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: rgba(232, 255, 0, 0.07);
+}
+
+/* ===== ФИКС РАЗМЕРОВ СТРАНИЦ ===== */
+/* Страницы — одинаковая ширина, высота строго пропорциональная */
+.page-item {
+  width: 100%;
+  max-width: 900px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.page-item img {
+  width: 100% !important;
+  height: auto !important;
+  max-width: 100% !important;
+  object-fit: unset !important;
+  display: block;
+}
+
+@media (max-width: 768px) {
+  .page-item {
+    max-width: 100%;
+  }
+}

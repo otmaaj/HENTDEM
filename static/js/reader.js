@@ -2,9 +2,9 @@ let allManga = [];
 let activeGenres = new Set();
 let currentUser = localStorage.getItem('hd_user') || null;
 
-// Иконки для интерфейса
 const eyeIcon = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`;
 const thumbIcon = `<svg viewBox="0 0 24 24" width="16" height="16" style="fill: currentColor; vertical-align: middle; margin-right: 4px;"><path d="M1 21h4V9H1v12zm22-11c0-1.1-.9-2-2-2h-6.31l.95-4.57.03-.32c0-.41-.17-.79-.44-1.06L14.17 1 7.59 7.59C7.22 7.95 7 8.45 7 9v10c0 1.1.9 2 2 2h9c.75 0 1.41-.41 1.75-1.03l3.58-8.35c.09-.23.15-.48.15-.75v-2z"/></svg> `;
+const heartIcon = `<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style="display: block;"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>`;
 
 updateProfileUI();
 
@@ -122,7 +122,10 @@ function showToast(msg, targetBtn) {
   if (oldToast) oldToast.remove();
   const t = document.createElement('div');
   t.className = 'toast';
-  t.textContent = msg;
+  t.style.display = 'inline-flex';
+  t.style.alignItems = 'center';
+  t.style.gap = '4px';
+  t.innerHTML = msg;
   targetBtn.appendChild(t);
   setTimeout(() => t.classList.add('show'), 10);
   setTimeout(() => {
@@ -143,7 +146,7 @@ async function toggleFav(e, mangaName) {
     const r = await fetch(url, { method: 'POST' });
     if (!r.ok) { const d = await r.json(); alert(parseError(d)); return; }
     btn.classList.toggle('active');
-    showToast(isActive ? '✕ Удалено' : '♥ Добавлено', btn);
+    showToast(isActive ? '✕ Удалено' : `${heartIcon} Добавлено`, btn);
   } catch(e) { alert('Ошибка сети'); }
 }
 
@@ -307,7 +310,7 @@ function renderCards(list, el, isFav = false) {
         <div class="card-like card-like--readonly" data-name="${m.name}" data-likes="${m.likes ?? 0}">${thumbIcon}${m.likes ?? 0}</div>
         <div class="card-views">${eyeIcon} ${m.views ?? 0}</div>
         <div class="card-arrow">›</div>
-        ${currentUser && !isFav ? `<div class="fav-heart">♥</div>` : ''}
+        ${currentUser && !isFav ? `<div class="fav-heart">${heartIcon}</div>` : ''}
         ${isFav ? '<div class="fav-delete">🗑</div>' : ''}
       </div>`;
 
@@ -324,12 +327,10 @@ function renderCards(list, el, isFav = false) {
       });
     }
 
-    // Лайк на главной — только визуал, клик заблокирован
     const like = card.querySelector('.card-like--readonly');
     if (like) {
       like.addEventListener('click', e => {
         e.stopPropagation();
-        // ничего не делаем
       });
     }
 
@@ -342,9 +343,6 @@ function renderCards(list, el, isFav = false) {
   });
 }
 
-// ===================== READER =====================
-
-// Скрытие хедера при скролле вниз, появление при скролле вверх
 let readerLastScrollY = 0;
 let readerHeaderVisible = true;
 let readerScrollListener = null;
@@ -354,7 +352,6 @@ function setupReaderScrollBehavior() {
   const header = document.getElementById('reader-header');
   if (!wrap || !header) return;
 
-  // Удаляем старый листенер если есть
   if (readerScrollListener) {
     wrap.removeEventListener('scroll', readerScrollListener);
   }
@@ -382,7 +379,6 @@ function setupReaderScrollBehavior() {
 
 async function toggleLikeInReader(mangaName) {
   if (!currentUser) { alert('Войдите в аккаунт'); return; }
-  // Синхронизируем все кнопки лайка (в хедере + снизу)
   const btns = document.querySelectorAll('.reader-like-btn');
   const isActive = btns[0]?.classList.contains('active');
   const url = isActive
@@ -418,7 +414,6 @@ async function openReader(name) {
   const reader = document.getElementById('reader');
   const wrap   = document.getElementById('pages-wrap');
 
-  // Убираем старую кнопку лайка из хедера если есть
   const oldLikeBtn = document.getElementById('reader-header-like');
   if (oldLikeBtn) oldLikeBtn.remove();
 
@@ -440,7 +435,6 @@ async function openReader(name) {
 
     document.getElementById('reader-count').innerHTML = `${pages.length} стр. &nbsp;·&nbsp; ${eyeIcon} ${data.views ?? 0}`;
 
-    // Кнопка лайка в хедере (рядом с "Закрыть")
     const headerLikeBtn = buildReaderLikeBtn(name, likesCount);
     headerLikeBtn.id = 'reader-header-like';
     const closeBtn = document.querySelector('#reader .close-btn');
@@ -457,7 +451,6 @@ async function openReader(name) {
       wrap.appendChild(item);
     });
 
-    // Кнопка лайка СНИЗУ страниц
     const likeBottom = document.createElement('div');
     likeBottom.className = 'reader-like-wrap--bottom';
     likeBottom.appendChild(buildReaderLikeBtn(name, likesCount));
@@ -473,10 +466,8 @@ function closeReader() {
   document.getElementById('reader').classList.remove('open');
   document.getElementById('pages-wrap').innerHTML = '';
   document.body.style.overflow = '';
-  // Сброс хедера
   const header = document.getElementById('reader-header');
   if (header) header.classList.remove('reader-header--hidden');
-  // Убрать кнопку лайка из хедера
   const likeBtn = document.getElementById('reader-header-like');
   if (likeBtn) likeBtn.remove();
 }
@@ -493,7 +484,6 @@ if (genreBar) {
   });
 }
 
-// Логика окна 18+
 (function() {
   function initAgeGate() {
     const ageGate = document.getElementById('age-gate-overlay');

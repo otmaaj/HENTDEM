@@ -29,7 +29,7 @@ async def manga_list(db: AsyncSession = Depends(get_db)):
         photo = get_photo(manga.name)
         result_likes = await db.execute(select(Likes).where(Likes.manga_id == manga.id))
         likes_count = len(result_likes.scalars().all())
-        res.append({"name": manga.name, "genre": manga.genre, "photo": photo, "views": manga.views, "likes": likes_count})
+        res.append({"name": manga.name, "genre": manga.genre, "photo": photo, "views": manga.views, "likes": likes_count,"pages_count": len(get_pages(manga.name)),})
     return {"manga": res}
 
 @router.post('/add')

@@ -362,14 +362,18 @@ function setupReaderScrollBehavior() {
 
   readerScrollListener = () => {
     const currentY = wrap.scrollTop;
-    const diff = currentY - readerLastScrollY;
+    if (Math.abs(currentY - readerLastScrollY) < 10) return;
 
-    if (diff > 8 && readerHeaderVisible) {
-      readerHeaderVisible = false;
-      header.classList.add('reader-header--hidden');
-    } else if (diff < -8 && !readerHeaderVisible) {
-      readerHeaderVisible = true;
-      header.classList.remove('reader-header--hidden');
+    if (currentY > readerLastScrollY && currentY > 50) {
+      if (readerHeaderVisible) {
+        readerHeaderVisible = false;
+        header.classList.add('reader-header--hidden');
+      }
+    } else {
+      if (!readerHeaderVisible) {
+        readerHeaderVisible = true;
+        header.classList.remove('reader-header--hidden');
+      }
     }
     readerLastScrollY = currentY;
   };

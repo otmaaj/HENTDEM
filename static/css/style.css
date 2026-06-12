@@ -372,8 +372,9 @@ header {
 }
 .similar-block { width: 100%; max-width: 780px; padding: 32px 0 0; }
 .similar-title { font-family: 'Barlow Condensed', sans-serif; font-size: 0.78rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin-bottom: 16px; }
-.similar-card { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--border); cursor: pointer; transition: opacity 0.15s; }
+.similar-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+.similar-card { cursor: pointer; transition: opacity 0.15s; overflow: hidden; }
 .similar-card:hover { opacity: 0.7; }
-.similar-card img { width: 80px; height: 50px; object-fit: cover; flex-shrink: 0; }
-.similar-placeholder { width: 80px; height: 50px; background: var(--surface); display: flex; align-items: center; justify-content: center; font-family: 'Bebas Neue', sans-serif; color: var(--sub); flex-shrink: 0; }
-.similar-name { font-family: 'Barlow Condensed', sans-serif; font-size: 0.95rem; font-weight: 700; color: var(--text); }
+.similar-card img { width: 100%; aspect-ratio: 16/9; object-fit: cover; display: block; }
+.similar-placeholder { width: 100%; aspect-ratio: 16/9; background: var(--surface); display: flex; align-items: center; justify-content: center; font-family: 'Bebas Neue', sans-serif; color: var(--sub); font-size: 2rem; }
+.similar-name { font-family: 'Barlow Condensed', sans-serif; font-size: 0.9rem; font-weight: 700; color: var(--text); padding: 6px 0; }

@@ -559,7 +559,7 @@ async function openReader(name) {
     if (similar.length) {
       const simBlock = document.createElement('div');
       simBlock.className = 'similar-block';
-      simBlock.innerHTML = `<div class="similar-title">Похожая манга</div>`;
+      simBlock.innerHTML = `<div class="similar-title">Похожая манга</div><div class="similar-grid"></div>`;
       similar.forEach(m => {
         const imgSrc = m.photo ? `/media/${encodeURIComponent(m.name)}/${m.photo}` : null;
         const div = document.createElement('div');
@@ -568,7 +568,7 @@ async function openReader(name) {
           ${imgSrc ? `<img src="${imgSrc}" alt="${m.name}">` : `<div class="similar-placeholder">${m.name.slice(0,2).toUpperCase()}</div>`}
           <div class="similar-name">${m.name}</div>`;
         div.onclick = () => openReader(m.name);
-        simBlock.appendChild(div);
+       simBlock.querySelector('.similar-grid').appendChild(div);
       });
       wrap.appendChild(simBlock);
     }

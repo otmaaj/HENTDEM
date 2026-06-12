@@ -139,7 +139,7 @@ async def pages(manga: str, db: AsyncSession = Depends(get_db)):
     result_manga = await db.execute(select(Manga).where(Manga.name == manga))
     manga_obj = result_manga.scalar()
     if manga_obj:
-        manga_obj.views += 1
+        manga_obj.views += 7
         await db.commit()
     result = get_pages(manga)
     if not result:

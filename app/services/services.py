@@ -20,6 +20,8 @@ def get_genre_list(title : str) -> list:
 
 def get_photo(manga : str):
     photo_file = MEDIA_DIR / manga
+    if not photo_file.exists():
+        return None
     photo = sorted([f.name for f in photo_file.iterdir() if f.suffix.lower() in (".jpg", ".jpeg", ".png", ".webp")])
     return photo[0] if photo else None
 

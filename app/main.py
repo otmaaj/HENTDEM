@@ -81,3 +81,4 @@ async def index():
 @app.get("/read/{manga}")
 async def read_page(manga: str):
     return FileResponse(BASE_DIR / "static" / "index.html")
+

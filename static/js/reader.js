@@ -500,7 +500,10 @@ async function openReader(name) {
     const el = document.getElementById(id);
     if (el) el.remove();
   });
-
+const currentTitle = document.getElementById('reader-title').textContent;
+if (document.getElementById('reader').classList.contains('open') && currentTitle && currentTitle !== '—') {
+  readerHistory.push(currentTitle);
+}
   document.getElementById('reader-title').textContent = name;
   document.getElementById('reader-count').textContent = '';
   wrap.innerHTML = `<div class="loader"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>`;
@@ -577,11 +580,19 @@ async function openReader(name) {
   }
 }
 
+let readerHistory = [];
+
 function closeReader() {
-  history.pushState({}, '', '/');
   document.getElementById('reader').classList.remove('open');
   document.getElementById('pages-wrap').innerHTML = '';
   document.body.style.overflow = '';
+  if (readerHistory.length > 0) {
+    const prev = readerHistory.pop();
+    openReader(prev);
+  } else {
+    history.pushState({}, '', '/');
+  }
+}
 
 
   const header = document.getElementById('reader-header');
@@ -590,7 +601,7 @@ function closeReader() {
     const el = document.getElementById(id);
     if (el) el.remove();
   });
-}
+
 
 document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeReader(); closeFav(); } });
 

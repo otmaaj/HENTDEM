@@ -423,6 +423,7 @@ function setupReaderScrollBehavior() {
   header.classList.remove('reader-header--hidden');
   readerScrollListener = () => {
     const currentY = wrap.scrollTop;
+
     const diff = currentY - readerLastScrollY;
     if (diff > 8 && readerHeaderVisible) {
       readerHeaderVisible = false;
@@ -430,6 +431,7 @@ function setupReaderScrollBehavior() {
     } else if (diff < -8 && !readerHeaderVisible) {
       readerHeaderVisible = true;
       header.classList.remove('reader-header--hidden');
+
     }
     readerLastScrollY = currentY;
   };
@@ -551,16 +553,37 @@ async function openReader(name) {
     likeBottom.appendChild(buildReaderLikeBtn(name, likesCount));
     wrap.appendChild(likeBottom);
 
+ // Похожая манга
+    const mangaGenres = (allManga.find(m => m.name === name)?.genre || '').split(',').map(g => g.trim());
+    const similar = allManga.filter(m => m.name !== name && m.genre && mangaGenres.some(g => m.genre.split(',').map(x => x.trim()).includes(g))).slice(0, 6);
+    if (similar.length) {
+      const simBlock = document.createElement('div');
+      simBlock.className = 'similar-block';
+      simBlock.innerHTML = `<div class="similar-title">Похожая манга</div><div class="similar-grid"></div>`;
+      similar.forEach(m => {
+        const imgSrc = m.photo ? `/media/${encodeURIComponent(m.name)}/${m.photo}` : null;
+        const div = document.createElement('div');
+        div.className = 'similar-card';
+        div.innerHTML = `
+          ${imgSrc ? `<img src="${imgSrc}" alt="${m.name}">` : `<div class="similar-placeholder">${m.name.slice(0,2).toUpperCase()}</div>`}
+          <div class="similar-name">${m.name}</div>`;
+        div.onclick = () => openReader(m.name);
+       simBlock.querySelector('.similar-grid').appendChild(div);
+      });
+      wrap.appendChild(simBlock);
+    }
   } catch(e) {
     wrap.innerHTML = `<div class="empty">Ошибка: ${e.message}</div>`;
   }
 }
 
 function closeReader() {
-  history.back();
+  history.pushState({}, '', '/');
   document.getElementById('reader').classList.remove('open');
   document.getElementById('pages-wrap').innerHTML = '';
   document.body.style.overflow = '';
+
+
   const header = document.getElementById('reader-header');
   if (header) header.classList.remove('reader-header--hidden');
   ['reader-header-like', 'reader-header-fav'].forEach(id => {

@@ -265,11 +265,19 @@ async function loadManga() {
 function buildGenres(list) {
   const set = new Set();
   list.forEach(m => (m.genre || 'другое').split(',').forEach(g => set.add(g.trim())));
+  
+  // 1. Превращаем Set в массив, чтобы можно было отсортировать
+  const sortedGenres = Array.from(set).sort((a, b) => a.localeCompare(b, 'ru'));
+  
   const bar = document.getElementById('genre-bar');
-  set.forEach(g => {
+  
+  // 2. Используем отсортированный массив для создания кнопок
+  sortedGenres.forEach(g => {
     if (bar.querySelector(`[data-genre="${g}"]`)) return;
     const btn = document.createElement('button');
-    btn.className = 'genre-btn'; btn.textContent = g; btn.dataset.genre = g;
+    btn.className = 'genre-btn'; 
+    btn.textContent = g; 
+    btn.dataset.genre = g;
     btn.onclick = () => setGenre(btn, g);
     bar.appendChild(btn);
   });

@@ -378,3 +378,34 @@ header {
 .similar-card img { width: 100%; aspect-ratio: 16/9; object-fit: cover; display: block; }
 .similar-placeholder { width: 100%; aspect-ratio: 16/9; background: var(--surface); display: flex; align-items: center; justify-content: center; font-family: 'Bebas Neue', sans-serif; color: var(--sub); font-size: 2rem; }
 .similar-name { font-family: 'Barlow Condensed', sans-serif; font-size: 0.9rem; font-weight: 700; color: var(--text); padding: 6px 0; }
+/* Исправление для кнопки Выйти */
+  .dlogout {
+    position: relative !important;
+    z-index: 100 !important;
+  }
+  #pagination {
+    position: relative !important;
+    z-index: 1000 !important;
+}
+.footer-banner {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    /* Установите отрицательное значение, чтобы поднять баннер */
+    margin-top: -157px !important; 
+    /* Уменьшите нижний отступ, чтобы убрать лишнюю пустоту под ним */
+    margin-bottom: 20px !important; 
+    padding: 0;
+    z-index: 0;
+}
+
+/* Мобильная адаптация */
+@media (max-width: 600px) {
+    .footer-banner {
+        /* На мобильных можно подтянуть еще выше, если нужно */
+        margin-top: -140px !important; 
+    }
+    .footer-banner img {
+        width: 140px !important;
+    }
+}

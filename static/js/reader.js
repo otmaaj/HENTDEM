@@ -11,12 +11,12 @@ updateProfileUI();
 window.addEventListener('load', () => {
   setTimeout(() => { document.getElementById('search').value = ''; }, 100);
   const match = location.pathname.match(/^\/read\/(.+)$/);
-  if (match) openReader(decodeURIComponent(match[1]));
+  if (match) openReader(decodeURIComponent(match[1]), { fromPopState: true });
 });
 
 window.addEventListener('popstate', e => {
-  if (e.state?.manga) openReader(e.state.manga);
-  else { closeReader(); closeFav(); }
+  if (e.state?.manga) openReader(e.state.manga, { fromPopState: true });
+  else { closeReader({ fromPopState: true }); closeFav(); }
 });
 
 document.addEventListener('click', e => {
@@ -265,18 +265,18 @@ async function loadManga() {
 function buildGenres(list) {
   const set = new Set();
   list.forEach(m => (m.genre || 'другое').split(',').forEach(g => set.add(g.trim())));
-  
+
   // 1. Превращаем Set в массив, чтобы можно было отсортировать
   const sortedGenres = Array.from(set).sort((a, b) => a.localeCompare(b, 'ru'));
-  
+
   const bar = document.getElementById('genre-bar');
-  
+
   // 2. Используем отсортированный массив для создания кнопок
   sortedGenres.forEach(g => {
     if (bar.querySelector(`[data-genre="${g}"]`)) return;
     const btn = document.createElement('button');
-    btn.className = 'genre-btn'; 
-    btn.textContent = g; 
+    btn.className = 'genre-btn';
+    btn.textContent = g;
     btn.dataset.genre = g;
     btn.onclick = () => setGenre(btn, g);
     bar.appendChild(btn);
@@ -497,8 +497,18 @@ function buildReaderLikeBtn(mangaName, likesCount) {
   return btn;
 }
 
-async function openReader(name) {
-  history.pushState({ manga: name }, '', `/read/${encodeURIComponent(name)}`);
+// readerHistory хранит стек НАЗВАНИЙ манги, по которым пользователь переходил
+// через "Похожая манга" / карточки внутри ридера (не системную историю браузера).
+let readerHistory = [];
+
+async function openReader(name, options = {}) {
+  const { fromPopState = false } = options;
+
+  // Если переход вызван системной кнопкой "Назад" (popstate), новую запись
+  // в history НЕ добавляем — иначе стек "скачет" и кнопка назад перестаёт работать.
+  if (!fromPopState) {
+    history.pushState({ manga: name }, '', `/read/${encodeURIComponent(name)}`);
+  }
   readerCurrentManga = name;
 
   const reader = document.getElementById('reader');
@@ -508,10 +518,14 @@ async function openReader(name) {
     const el = document.getElementById(id);
     if (el) el.remove();
   });
-const currentTitle = document.getElementById('reader-title').textContent;
-if (document.getElementById('reader').classList.contains('open') && currentTitle && currentTitle !== '—') {
-  readerHistory.push(currentTitle);
-}
+
+  // Запоминаем предыдущую открытую мангу в readerHistory только для обычных
+  // (не popstate) переходов — например, клик по "Похожая манга".
+  const currentTitle = document.getElementById('reader-title').textContent;
+  if (!fromPopState && reader.classList.contains('open') && currentTitle && currentTitle !== '—') {
+    readerHistory.push(currentTitle);
+  }
+
   document.getElementById('reader-title').textContent = name;
   document.getElementById('reader-count').textContent = '';
   wrap.innerHTML = `<div class="loader"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>`;
@@ -572,7 +586,7 @@ if (document.getElementById('reader').classList.contains('open') && currentTitle
     likeBottom.appendChild(buildReaderLikeBtn(name, likesCount));
     wrap.appendChild(likeBottom);
 
- // Похожая манга
+    // Похожая манга
     const mangaGenres = (allManga.find(m => m.name === name)?.genre || '').split(',').map(g => g.trim());
     const similar = allManga.filter(m => m.name !== name && m.genre && mangaGenres.some(g => m.genre.split(',').map(x => x.trim()).includes(g))).slice(0, 6);
     if (similar.length) {
@@ -587,7 +601,7 @@ if (document.getElementById('reader').classList.contains('open') && currentTitle
           ${imgSrc ? `<img src="${imgSrc}" alt="${m.name}">` : `<div class="similar-placeholder">${m.name.slice(0,2).toUpperCase()}</div>`}
           <div class="similar-name">${m.name}</div>`;
         div.onclick = () => openReader(m.name);
-       simBlock.querySelector('.similar-grid').appendChild(div);
+        simBlock.querySelector('.similar-grid').appendChild(div);
       });
       wrap.appendChild(simBlock);
     }
@@ -596,20 +610,12 @@ if (document.getElementById('reader').classList.contains('open') && currentTitle
   }
 }
 
-let readerHistory = [];
+function closeReader(options = {}) {
+  const { fromPopState = false } = options;
 
-function closeReader() {
   document.getElementById('reader').classList.remove('open');
   document.getElementById('pages-wrap').innerHTML = '';
   document.body.style.overflow = '';
-  if (readerHistory.length > 0) {
-    const prev = readerHistory.pop();
-    openReader(prev);
-  } else {
-    history.pushState({}, '', '/');
-  }
-}
-
 
   const header = document.getElementById('reader-header');
   if (header) header.classList.remove('reader-header--hidden');
@@ -618,6 +624,20 @@ function closeReader() {
     if (el) el.remove();
   });
 
+  if (readerHistory.length > 0) {
+    const prev = readerHistory.pop();
+    // Это закрытие именно по кнопке-крестику ("назад" внутри ридера по readerHistory),
+    // поэтому здесь НЕ fromPopState — нужно запушить новую запись в history.
+    openReader(prev);
+  } else if (!fromPopState) {
+    // Закрытие крестиком без истории похожих манг — обычный переход на главную.
+    history.pushState({}, '', '/');
+  }
+  // Если fromPopState === true и readerHistory пуста — ничего не делаем,
+  // адресная строка уже верная (popstate сам её обновил браузером).
+
+  readerHistory = [];
+}
 
 document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeReader(); closeFav(); } });
 

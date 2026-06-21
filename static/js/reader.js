@@ -13,9 +13,11 @@ window.addEventListener('load', () => {
   const match = location.pathname.match(/^\/read\/(.+)$/);
   if (match) {
     openReader(decodeURIComponent(match[1]), { fromPopState: true });
-  } else if (location.pathname === '/favorites') {
-    // БАГФИКС: раньше открытие избранного никак не отражалось в URL,
-    // поэтому обновление страницы внутри избранного сбрасывало на главную.
+  } else if (new URLSearchParams(location.search).get('favorites') === '1') {
+    // БАГФИКС: используем query-параметр вместо отдельного пути /favorites,
+    // чтобы при обновлении страницы браузер всё равно слал запрос на "/"
+    // (который бэкенд уже умеет отдавать), а не на несуществующий роут —
+    // иначе бэкенд отвечал 404 Not Found.
     if (currentUser) {
       openFav({ fromPopState: true });
     } else {
@@ -235,11 +237,12 @@ function setupFavScrollBehavior() {
 async function openFav(options = {}) {
   const { fromPopState = false } = options;
 
-  // БАГФИКС: теперь открытие избранного пишет состояние в адресную строку,
-  // поэтому обновление страницы (F5) внутри избранного больше не кидает
-  // на главную, а восстанавливает избранное (см. обработчик window 'load').
+  // БАГФИКС: используем "/?favorites=1" (а не отдельный путь /favorites),
+  // чтобы при обновлении страницы (F5) браузер слал запрос на уже
+  // существующий на бэкенде роут "/", а не получал 404. JS на старте
+  // считывает query-параметр и сам открывает избранное (см. window 'load').
   if (!fromPopState) {
-    history.pushState({ fav: true }, '', '/favorites');
+    history.pushState({ fav: true }, '', '/?favorites=1');
   }
 
   document.getElementById('profile-dropdown').classList.remove('open');

@@ -77,6 +77,9 @@ app.mount("/static", StaticFiles(directory=BASE_DIR / "static"), name="static")
 async def index():
     return FileResponse(BASE_DIR / "static" / "index.html")
 
+@app.get("/favorites")
+async def favorites_page():
+    return FileResponse(BASE_DIR / "static" / "index.html")
 
 @app.get("/read/{manga}")
 async def read_page(manga: str):

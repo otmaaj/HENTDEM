@@ -267,7 +267,7 @@ header {
   display: flex;
   justify-content: center;
   gap: 8px;
-  padding: 24px 0;
+  padding: 24px 0 8px;
   flex-wrap: wrap;
   position: relative;
   z-index: 1;
@@ -326,6 +326,8 @@ header {
   .reader-header-btn { height: 30px; padding: 0 9px; font-size: 0.75rem; }
   #global-toast { bottom: 60px; font-size: 0.78rem; padding: 8px 16px; }
   .similar-grid { grid-template-columns: 1fr; }
+  #pagination { padding: 16px 0 4px; gap: 6px; }
+  .page-btn { width: 34px; height: 34px; font-size: 1.05rem; }
 }
 
 /* SCROLL ANIMATION */
@@ -409,12 +411,23 @@ header {
   width: 100%;
   display: flex;
   justify-content: center;
-  margin-top: 20px;
-  margin-bottom: 20px;
+  margin-top: 4px;
+  margin-bottom: 16px;
   padding: 0;
   z-index: 0;
 }
+.footer-banner img {
+  width: 180px;
+  max-width: 40%;
+  height: auto;
+  display: block;
+}
 
 @media (max-width: 600px) {
-  .footer-banner img { width: 140px; }
+  .footer-banner { margin-top: 0; margin-bottom: 12px; }
+  .footer-banner img { width: 120px; max-width: 32%; }
+}
+
+@media (max-width: 380px) {
+  .footer-banner img { width: 100px; max-width: 30%; }
 }

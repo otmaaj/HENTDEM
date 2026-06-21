@@ -497,10 +497,8 @@ function buildReaderLikeBtn(mangaName, likesCount) {
   return btn;
 }
 
-async function openReader(name, fromPopstate = false) {
-  if (!fromPopstate) {
-    history.pushState({ manga: name }, '', `/read/${encodeURIComponent(name)}`);
-  }
+async function openReader(name) {
+  history.pushState({ manga: name }, '', `/read/${encodeURIComponent(name)}`);
   readerCurrentManga = name;
 
   const reader = document.getElementById('reader');
@@ -510,12 +508,10 @@ async function openReader(name, fromPopstate = false) {
     const el = document.getElementById(id);
     if (el) el.remove();
   });
-  if (!fromPopstate) {
-    const currentTitle = document.getElementById('reader-title').textContent;
-    if (document.getElementById('reader').classList.contains('open') && currentTitle && currentTitle !== '—') {
-      readerHistory.push(currentTitle);
-    }
-  }
+const currentTitle = document.getElementById('reader-title').textContent;
+if (document.getElementById('reader').classList.contains('open') && currentTitle && currentTitle !== '—') {
+  readerHistory.push(currentTitle);
+}
   document.getElementById('reader-title').textContent = name;
   document.getElementById('reader-count').textContent = '';
   wrap.innerHTML = `<div class="loader"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>`;

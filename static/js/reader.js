@@ -497,8 +497,10 @@ function buildReaderLikeBtn(mangaName, likesCount) {
   return btn;
 }
 
-async function openReader(name) {
-  history.pushState({ manga: name }, '', `/read/${encodeURIComponent(name)}`);
+async function openReader(name, fromPopstate = false) {
+  if (!fromPopstate) {
+    history.pushState({ manga: name }, '', `/read/${encodeURIComponent(name)}`);
+  }
   readerCurrentManga = name;
 
   const reader = document.getElementById('reader');
@@ -508,10 +510,12 @@ async function openReader(name) {
     const el = document.getElementById(id);
     if (el) el.remove();
   });
-const currentTitle = document.getElementById('reader-title').textContent;
-if (document.getElementById('reader').classList.contains('open') && currentTitle && currentTitle !== '—') {
-  readerHistory.push(currentTitle);
-}
+  if (!fromPopstate) {
+    const currentTitle = document.getElementById('reader-title').textContent;
+    if (document.getElementById('reader').classList.contains('open') && currentTitle && currentTitle !== '—') {
+      readerHistory.push(currentTitle);
+    }
+  }
   document.getElementById('reader-title').textContent = name;
   document.getElementById('reader-count').textContent = '';
   wrap.innerHTML = `<div class="loader"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>`;
@@ -561,6 +565,14 @@ if (document.getElementById('reader').classList.contains('open') && currentTitle
 
     const likeBottom = document.createElement('div');
     likeBottom.className = 'reader-like-wrap--bottom';
+
+    const mangaInfoForTags = allManga.find(m => m.name === name);
+    const currentMangaGenres = (mangaInfoForTags?.genre || '').split(',').map(g => g.trim()).filter(Boolean);
+    const tagsDiv = document.createElement('div');
+    tagsDiv.className = 'reader-bottom-tags';
+    tagsDiv.innerHTML = currentMangaGenres.map(g => `<span class="tag">${g}</span>`).join('');
+    likeBottom.appendChild(tagsDiv);
+
     likeBottom.appendChild(buildReaderLikeBtn(name, likesCount));
     wrap.appendChild(likeBottom);
 

@@ -59,7 +59,7 @@ header {
 .dmsg.ok { color: var(--accent); }
 .dmsg.err { color: var(--red); }
 
-/* БАГИ 1+2: кнопки избранное/выйти не вылезают за рамки */
+/* Кнопки избранное / выйти — объединено, не вылезают за рамки, всегда кликабельны */
 .dfav-btn, .dlogout {
   display: flex;
   align-items: center;
@@ -81,6 +81,8 @@ header {
   overflow: hidden;
   padding: 0 8px;
   flex-shrink: 0;
+  position: relative;
+  z-index: 100;
 }
 .dfav-btn {
   margin-bottom: 8px;
@@ -136,7 +138,7 @@ header {
 .card-info { display: flex; align-items: center; gap: 10px; padding: 11px 16px 13px; }
 .card-num { font-family: 'Bebas Neue', sans-serif; font-size: 1.6rem; color: var(--sub); line-height: 1; flex-shrink: 0; min-width: 30px; }
 .card-meta { flex: 1; min-width: 0; }
-.card-name { font-family: 'Barlow Condensed', sans-serif; font-size: 1.1rem; font-weight: 700; letter-spacing: 0.02em; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.card-name { font-family: 'Barlow Condensed', sans-serif; font-size: 1.1rem; font-weight: 700; letter-spacing: 0.02em; color: var(--text); white-space: normal; overflow: visible; word-break: break-word; line-height: 1.25; }
 .card-genres { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 5px; }
 .tag { font-size: 0.62rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); background: #111; border: 1px solid var(--border); padding: 2px 7px; line-height: 1.7; }
 .card-arrow { color: var(--sub); font-size: 1.4rem; flex-shrink: 0; line-height: 1; transition: color 0.15s, transform 0.15s; }
@@ -152,7 +154,6 @@ header {
 .card-like--readonly { cursor: default; pointer-events: none; }
 .card-views { display: flex; align-items: center; gap: 4px; font-size: 0.72rem; color: var(--muted); flex-shrink: 0; }
 
-/* БАГ 4: страницы на главной */
 .card-pages {
   font-family: 'Barlow Condensed', sans-serif;
   font-size: 0.7rem;
@@ -216,12 +217,28 @@ header {
 .page-item .page-num { font-family: 'Bebas Neue', sans-serif; font-size: 1rem; color: var(--sub); align-self: flex-start; padding: 0 8px 6px; }
 .page-item img { width: 100% !important; height: auto !important; max-width: 100% !important; object-fit: unset !important; display: block; }
 
-.reader-like-wrap--bottom { display: flex; justify-content: center; padding: 24px 0 16px; width: 100%; }
+.reader-like-wrap--bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 24px 16px 16px;
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
+}
+.reader-bottom-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  flex: 1;
+  min-width: 0;
+}
 .reader-like-btn {
   height: 38px; padding: 0 24px; display: inline-flex; align-items: center; justify-content: center; gap: 6px;
   background: var(--surface); border: 1px solid var(--border); color: var(--muted);
   font-family: 'Barlow Condensed', sans-serif; font-size: 0.95rem; font-weight: 700; letter-spacing: 0.08em;
-  text-transform: uppercase; cursor: pointer; transition: all 0.2s;
+  text-transform: uppercase; cursor: pointer; transition: all 0.2s; flex-shrink: 0;
 }
 .reader-like-btn:hover { border-color: var(--accent); color: var(--accent); }
 .reader-like-btn.active { border-color: var(--accent); color: var(--accent); background: rgba(232,255,0,0.07); }
@@ -245,16 +262,24 @@ header {
 .fav-delete { width: 28px; height: 28px; background: transparent; border: 1px solid var(--border); color: var(--muted); font-size: 0.85rem; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.15s; flex-shrink: 0; }
 .fav-delete:hover { color: var(--red); border-color: var(--red); }
 
-/* PAGINATION */
-#pagination { display: flex; justify-content: center; gap: 8px; padding: 24px 0; flex-wrap: wrap; }
+/* PAGINATION — единое определение, всегда выше footer-banner и кликабельна */
+#pagination {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  padding: 24px 0;
+  flex-wrap: wrap;
+  position: relative;
+  z-index: 1;
+}
 .page-btn { background: transparent; border: 1px solid var(--border); color: var(--muted); font-family: 'Bebas Neue', sans-serif; font-size: 1.2rem; width: 40px; height: 40px; cursor: pointer; transition: all 0.15s; }
 .page-btn:hover { border-color: var(--accent); color: var(--accent); }
 .page-btn.active { border-color: var(--accent); color: var(--accent); background: rgba(232,255,0,0.08); }
 
 /* AGE GATE */
 .age-gate-buttons { display: flex; flex-direction: column; gap: 16px; margin-top: 30px; width: 100%; }
-.age-gate-buttons button { width: 100%; padding: 18px 16px; font-size: 18px; font-weight: bold; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: #1b1b1b !important; color: #ffffff !important; border: 3px solid #ff9900 !important; border-radius: 8px !important; cursor: pointer; text-align: center; box-sizing: border-box; transition: background-color 0.15s ease; }
-.age-gate-buttons button:hover { background-color: #262626 !important; }
+.age-gate-buttons button { width: 100%; padding: 18px 16px; font-size: 18px; font-weight: bold; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: #1b1b1b; color: #ffffff; border: 3px solid #ff9900; border-radius: 8px; cursor: pointer; text-align: center; box-sizing: border-box; transition: background-color 0.15s ease; }
+.age-gate-buttons button:hover { background-color: #262626; }
 
 /* MEDIA QUERIES */
 @media (min-width: 1280px) {
@@ -300,6 +325,7 @@ header {
   #totop { bottom: 16px; right: 12px; width: 34px; height: 34px; font-size: 0.85rem; }
   .reader-header-btn { height: 30px; padding: 0 9px; font-size: 0.75rem; }
   #global-toast { bottom: 60px; font-size: 0.78rem; padding: 8px 16px; }
+  .similar-grid { grid-template-columns: 1fr; }
 }
 
 /* SCROLL ANIMATION */
@@ -318,12 +344,11 @@ header {
 #reader-header-fav:hover { border-color: var(--red); color: var(--red); }
 #reader-header-fav.active { border-color: var(--red); color: var(--red); background: rgba(255,50,50,0.07); }
 
-/* БАГ 3: тост в правый нижний угол */
+/* TOAST — по центру внизу экрана */
 #global-toast {
   position: fixed;
   bottom: 80px;
   left: 50%;
-  right: auto;
   transform: translateX(-50%) translateY(20px);
   background: #1a1a1a;
   border: 1px solid var(--border);
@@ -350,7 +375,6 @@ header {
   position: absolute;
   bottom: calc(100% + 5px);
   right: 0;
-  left: auto;
   transform: translateY(4px);
   background: #1a1a1a;
   border: 1px solid var(--border);
@@ -370,42 +394,27 @@ header {
   opacity: 1;
   transform: translateY(0);
 }
+
 .similar-block { width: 100%; max-width: 780px; padding: 32px 0 0; }
 .similar-title { font-family: 'Barlow Condensed', sans-serif; font-size: 0.78rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin-bottom: 16px; }
-.similar-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
-.similar-card { cursor: pointer; transition: opacity 0.15s; overflow: hidden; }
-.similar-card:hover { opacity: 0.7; }
+.similar-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+.similar-card { cursor: pointer; transition: opacity 0.15s; overflow: hidden; background: var(--card); border: 1px solid var(--border); }
+.similar-card:hover { opacity: 0.85; }
 .similar-card img { width: 100%; aspect-ratio: 16/9; object-fit: cover; display: block; }
-.similar-placeholder { width: 100%; aspect-ratio: 16/9; background: var(--surface); display: flex; align-items: center; justify-content: center; font-family: 'Bebas Neue', sans-serif; color: var(--sub); font-size: 2rem; }
-.similar-name { font-family: 'Barlow Condensed', sans-serif; font-size: 0.9rem; font-weight: 700; color: var(--text); padding: 6px 0; }
-/* Исправление для кнопки Выйти */
-  .dlogout {
-    position: relative !important;
-    z-index: 100 !important;
-  }
-  #pagination {
-    position: relative !important;
-    z-index: 1000 !important;
-}
+.similar-placeholder { width: 100%; aspect-ratio: 16/9; background: var(--surface); display: flex; align-items: center; justify-content: center; font-family: 'Bebas Neue', sans-serif; color: var(--sub); font-size: 2.5rem; }
+.similar-name { font-family: 'Barlow Condensed', sans-serif; font-size: 1rem; font-weight: 700; color: var(--text); padding: 10px 12px; line-height: 1.25; }
+
+/* FOOTER BANNER */
 .footer-banner {
-    width: 100%;
-    display: flex;
-    justify-content: center;
-    /* Установите отрицательное значение, чтобы поднять баннер */
-    margin-top: -157px !important; 
-    /* Уменьшите нижний отступ, чтобы убрать лишнюю пустоту под ним */
-    margin-bottom: 20px !important; 
-    padding: 0;
-    z-index: 0;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+  margin-bottom: 20px;
+  padding: 0;
+  z-index: 0;
 }
 
-/* Мобильная адаптация */
 @media (max-width: 600px) {
-    .footer-banner {
-        /* На мобильных можно подтянуть еще выше, если нужно */
-        margin-top: -140px !important; 
-    }
-    .footer-banner img {
-        width: 140px !important;
-    }
+  .footer-banner img { width: 140px; }
 }

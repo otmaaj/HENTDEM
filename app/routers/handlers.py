@@ -2,7 +2,7 @@ from fastapi import APIRouter, HTTPException, Depends, Query
 from app.services.services import get_manga_list, get_pages, get_photo, get_genre_list
 from app.models.connection import get_db
 from app.models.models import Manga, Favourites, Users, Likes
-from sqlalchemy import select
+from sqlalchemy import select, func
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -20,7 +20,7 @@ async def check(q: str = None, genre: list[str] = Query(default=[])):
 
 @router.get('/')
 async def manga_list(db: AsyncSession = Depends(get_db)):
-    result = await db.execute(select(Manga))
+    result = await db.execute(select(Manga).order_by(func.random()))
     mangas = result.scalars().all()
     if not mangas:
         raise HTTPException(status_code=404, detail="Манга не найдена")

@@ -392,7 +392,7 @@ header {
     display: flex;
     justify-content: center;
     /* Установите отрицательное значение, чтобы поднять баннер */
-    margin-top: -157px !important; 
+    margin-top: -70px !important; 
     /* Уменьшите нижний отступ, чтобы убрать лишнюю пустоту под ним */
     margin-bottom: 20px !important; 
     padding: 0;
@@ -403,7 +403,7 @@ header {
 @media (max-width: 600px) {
     .footer-banner {
         /* На мобильных можно подтянуть еще выше, если нужно */
-        margin-top: -140px !important; 
+        margin-top: -70px !important; 
     }
     .footer-banner img {
         width: 140px !important;

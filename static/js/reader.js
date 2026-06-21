@@ -209,8 +209,13 @@ function setupFavScrollBehavior() {
   body.addEventListener('scroll', favScrollListener, { passive: true });
 }
 
-async function openFav() {
+async function openFav(options = {}) {
+  const { fromPopState = false } = options;
   document.getElementById('profile-dropdown').classList.remove('open');
+  if (!currentUser) return;
+  if (!fromPopState) {
+    history.pushState({ fav: true }, '', '/favorites');
+  }
   const overlay = document.getElementById('fav-overlay');
   const list    = document.getElementById('fav-list');
   overlay.classList.add('open');
@@ -227,11 +232,15 @@ async function openFav() {
   }
 }
 
-function closeFav() {
+function closeFav(options = {}) {
+  const { fromPopState = false } = options;
   document.getElementById('fav-overlay').classList.remove('open');
   document.body.style.overflow = '';
   const header = document.querySelector('.fav-header');
   if (header) header.classList.remove('fav-header--hidden');
+  if (!fromPopState && location.pathname === '/favorites') {
+    history.pushState({}, '', '/');
+  }
 }
 
 let searchTimer;

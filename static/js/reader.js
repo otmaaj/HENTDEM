@@ -11,12 +11,35 @@ updateProfileUI();
 window.addEventListener('load', () => {
   setTimeout(() => { document.getElementById('search').value = ''; }, 100);
   const match = location.pathname.match(/^\/read\/(.+)$/);
-  if (match) openReader(decodeURIComponent(match[1]), { fromPopState: true });
+  if (match) {
+    openReader(decodeURIComponent(match[1]), { fromPopState: true });
+  } else if (location.pathname === '/favorites') {
+    // БАГФИКС: раньше открытие избранного никак не отражалось в URL,
+    // поэтому обновление страницы внутри избранного сбрасывало на главную.
+    if (currentUser) {
+      openFav({ fromPopState: true });
+    } else {
+      history.replaceState({}, '', '/');
+    }
+  }
 });
 
 window.addEventListener('popstate', e => {
-  if (e.state?.manga) openReader(e.state.manga, { fromPopState: true });
-  else { closeReader({ fromPopState: true }); closeFav(); }
+  // БАГФИКС: сбрасываем стек "похожей манги" при любой навигации через
+  // системную кнопку "Назад" — иначе он остаётся устаревшим и при
+  // следующем закрытии ридера крестиком возвращает не туда.
+  readerHistory = [];
+
+  if (e.state?.manga) {
+    closeFav({ fromPopState: true });
+    openReader(e.state.manga, { fromPopState: true });
+  } else if (e.state?.fav) {
+    closeReader({ fromPopState: true });
+    if (currentUser) openFav({ fromPopState: true });
+  } else {
+    closeReader({ fromPopState: true });
+    closeFav({ fromPopState: true });
+  }
 });
 
 document.addEventListener('click', e => {
@@ -211,17 +234,27 @@ function setupFavScrollBehavior() {
 
 async function openFav(options = {}) {
   const { fromPopState = false } = options;
-  document.getElementById('profile-dropdown').classList.remove('open');
-  if (!currentUser) return;
+
+  // БАГФИКС: теперь открытие избранного пишет состояние в адресную строку,
+  // поэтому обновление страницы (F5) внутри избранного больше не кидает
+  // на главную, а восстанавливает избранное (см. обработчик window 'load').
   if (!fromPopState) {
     history.pushState({ fav: true }, '', '/favorites');
   }
+
+  document.getElementById('profile-dropdown').classList.remove('open');
   const overlay = document.getElementById('fav-overlay');
   const list    = document.getElementById('fav-list');
   overlay.classList.add('open');
   document.body.style.overflow = 'hidden';
   setupFavScrollBehavior();
   list.innerHTML = `<div class="loader"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>`;
+
+  if (!currentUser) {
+    list.innerHTML = `<div class="empty">Войдите в аккаунт</div>`;
+    return;
+  }
+
   try {
     const r = await fetch(`/manga/fav_list?user_name=${encodeURIComponent(currentUser)}`);
     if (!r.ok) { const d = await r.json(); list.innerHTML = `<div class="empty">${d.detail}</div>`; return; }
@@ -234,11 +267,18 @@ async function openFav(options = {}) {
 
 function closeFav(options = {}) {
   const { fromPopState = false } = options;
-  document.getElementById('fav-overlay').classList.remove('open');
+  const overlay = document.getElementById('fav-overlay');
+  const wasOpen = overlay.classList.contains('open');
+
+  overlay.classList.remove('open');
   document.body.style.overflow = '';
   const header = document.querySelector('.fav-header');
   if (header) header.classList.remove('fav-header--hidden');
-  if (!fromPopState && location.pathname === '/favorites') {
+
+  // БАГФИКС: возвращаем URL на главную только если избранное реально было
+  // открыто (иначе логотип, кликнутый при закрытом избранном, плодил бы
+  // лишние записи в истории браузера).
+  if (wasOpen && !fromPopState) {
     history.pushState({}, '', '/');
   }
 }
@@ -518,9 +558,12 @@ async function openReader(name, options = {}) {
   // в history НЕ добавляем — иначе стек "скачет" и кнопка назад перестаёт работать.
   if (!fromPopState) {
     history.pushState({ manga: name }, '', `/read/${encodeURIComponent(name)}`);
-    // Запоминаем, что текущая "сессия" чтения начата из избранного —
-    // это нужно, чтобы крестик в ридере вернул в избранное, а не на главную.
-    readerOpenedFromFav = fromFav;
+    // БАГФИКС: раньше readerOpenedFromFav всегда перезаписывался значением
+    // fromFav (которое для клика по "Похожая манга" всегда false), из-за
+    // чего терялась информация "пришли из избранного" после первого же
+    // перехода по похожей манге внутри ридера. Теперь флаг не сбрасывается
+    // в false, если он уже был установлен в true.
+    readerOpenedFromFav = fromFav || readerOpenedFromFav;
   }
   readerCurrentManga = name;
 
@@ -613,7 +656,9 @@ async function openReader(name, options = {}) {
         div.innerHTML = `
           ${imgSrc ? `<img src="${imgSrc}" alt="${m.name}">` : `<div class="similar-placeholder">${m.name.slice(0,2).toUpperCase()}</div>`}
           <div class="similar-name">${m.name}</div>`;
-        div.onclick = () => openReader(m.name);
+        // БАГФИКС: прокидываем readerOpenedFromFav дальше, чтобы при переходе
+        // по похожей манге не терялась информация "пришли из избранного".
+        div.onclick = () => openReader(m.name, { fromFav: readerOpenedFromFav });
         simBlock.querySelector('.similar-grid').appendChild(div);
       });
       wrap.appendChild(simBlock);
@@ -645,7 +690,6 @@ function closeReader(options = {}) {
   } else if (!fromPopState) {
     if (readerOpenedFromFav) {
       // Ридер был открыт из избранного — возвращаем туда же, а не на главную.
-      history.pushState({}, '', '/');
       openFav();
     } else {
       // Закрытие крестиком без истории похожих манг — обычный переход на главную.

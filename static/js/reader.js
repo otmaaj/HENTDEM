@@ -408,7 +408,7 @@ function renderCards(list, el, isFav = false) {
     if (like) like.addEventListener('click', e => e.stopPropagation());
 
     if (isFav) {
-      card.onclick = () => { closeFav(); openReader(m.name); };
+      card.onclick = () => { closeFav(); openReader(m.name, { fromFav: true }); };
     } else {
       card.onclick = () => openReader(m.name);
     }
@@ -500,14 +500,18 @@ function buildReaderLikeBtn(mangaName, likesCount) {
 // readerHistory хранит стек НАЗВАНИЙ манги, по которым пользователь переходил
 // через "Похожая манга" / карточки внутри ридера (не системную историю браузера).
 let readerHistory = [];
+let readerOpenedFromFav = false;
 
 async function openReader(name, options = {}) {
-  const { fromPopState = false } = options;
+  const { fromPopState = false, fromFav = false } = options;
 
   // Если переход вызван системной кнопкой "Назад" (popstate), новую запись
   // в history НЕ добавляем — иначе стек "скачет" и кнопка назад перестаёт работать.
   if (!fromPopState) {
     history.pushState({ manga: name }, '', `/read/${encodeURIComponent(name)}`);
+    // Запоминаем, что текущая "сессия" чтения начата из избранного —
+    // это нужно, чтобы крестик в ридере вернул в избранное, а не на главную.
+    readerOpenedFromFav = fromFav;
   }
   readerCurrentManga = name;
 
@@ -628,15 +632,22 @@ function closeReader(options = {}) {
     const prev = readerHistory.pop();
     // Это закрытие именно по кнопке-крестику ("назад" внутри ридера по readerHistory),
     // поэтому здесь НЕ fromPopState — нужно запушить новую запись в history.
-    openReader(prev);
+    openReader(prev, { fromFav: readerOpenedFromFav });
   } else if (!fromPopState) {
-    // Закрытие крестиком без истории похожих манг — обычный переход на главную.
-    history.pushState({}, '', '/');
+    if (readerOpenedFromFav) {
+      // Ридер был открыт из избранного — возвращаем туда же, а не на главную.
+      history.pushState({}, '', '/');
+      openFav();
+    } else {
+      // Закрытие крестиком без истории похожих манг — обычный переход на главную.
+      history.pushState({}, '', '/');
+    }
   }
   // Если fromPopState === true и readerHistory пуста — ничего не делаем,
   // адресная строка уже верная (popstate сам её обновил браузером).
 
   readerHistory = [];
+  readerOpenedFromFav = false;
 }
 
 document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeReader(); closeFav(); } });

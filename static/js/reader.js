@@ -618,7 +618,7 @@ async function openReader(name, options = {}) {
     const headerLikeBtn = document.createElement('button');
     headerLikeBtn.id = 'reader-header-like';
     headerLikeBtn.className = 'reader-header-btn';
-    headerLikeBtn.innerHTML = `${thumbIcon}<span class="reader-like-count">${likesCount}</span>`;
+    headerLikeBtn.innerHTML = `${thumbIcon}`;
     headerLikeBtn.addEventListener('click', e => { e.stopPropagation(); toggleLikeInReader(name); });
     if (closeBtn) closeBtn.parentNode.insertBefore(headerLikeBtn, closeBtn);
 

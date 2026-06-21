@@ -418,16 +418,15 @@ header {
 }
 .footer-banner img {
   width: 180px;
-  max-width: 40%;
   height: auto;
   display: block;
 }
 
 @media (max-width: 600px) {
   .footer-banner { margin-top: 0; margin-bottom: 12px; }
-  .footer-banner img { width: 120px; max-width: 32%; }
+  .footer-banner img { width: 120px; }
 }
 
 @media (max-width: 380px) {
-  .footer-banner img { width: 100px; max-width: 30%; }
+  .footer-banner img { width: 100px; }
 }

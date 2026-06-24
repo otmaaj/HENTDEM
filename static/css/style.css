@@ -430,3 +430,6 @@ header {
 @media (max-width: 380px) {
   .footer-banner img { width: 100px; }
 }
+iframe[src=""], iframe:not([src]) {
+  display: none !important;
+}
